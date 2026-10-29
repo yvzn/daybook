@@ -1,13 +1,28 @@
 ﻿<Window x:Class="Daybook.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Daybook" Width="600" Height="680" MinWidth="420" MinHeight="480"
+        Title="Daybook" Width="600" Height="720" MinWidth="420" MinHeight="480"
         Background="{StaticResource SurfacePrimaryBrush}" FontFamily="Segoe UI" WindowStartupLocation="CenterScreen">
     <Grid>
-        <ContentControl Content="{Binding CurrentPage}" Focusable="False" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Tabs: where am I, where can I go -->
+        <Border BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1" Padding="24,6,24,0">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Today" Style="{StaticResource TabButton}"
+                        Command="{Binding ShowTodayCommand}" Tag="{Binding IsTodayTab}" />
+                <Button Content="Standup" Style="{StaticResource TabButton}"
+                        Command="{Binding ShowStandupCommand}" Tag="{Binding IsStandupTab}" />
+            </StackPanel>
+        </Border>
+
+        <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" Focusable="False" />
 
         <!-- Toast: "Bob removed · Undo" -->
-        <Border DataContext="{Binding Toast}"
+        <Border Grid.Row="1" DataContext="{Binding Toast}"
                 Visibility="{Binding IsVisible, Converter={StaticResource BoolToVisibility}}"
                 Background="{StaticResource TextPrimaryBrush}" CornerRadius="8" Padding="16,10"
                 HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,84">

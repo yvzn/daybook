@@ -6,17 +6,19 @@ namespace Daybook.App;
 
 public partial class App : Application
 {
-    private readonly TeamStore _store = new();
+    private readonly TeamStore _teamStore = new();
+    private readonly TaskStore _taskStore = new();
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        new MainWindow { DataContext = new MainViewModel(_store.Load()) }.Show();
+        new MainWindow { DataContext = new MainViewModel(_teamStore.Load(), _taskStore.Load()) }.Show();
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
-        _store.Flush();
+        _teamStore.Flush();
+        _taskStore.Flush();
         base.OnExit(e);
     }
 }

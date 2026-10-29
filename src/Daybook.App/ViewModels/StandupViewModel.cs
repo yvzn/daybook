@@ -50,9 +50,12 @@ public partial class StandupViewModel : ObservableObject
     private IEnumerable<SpeakerViewModel> AllSpeakers =>
         Waiting.Concat(Done).Concat(Away).Concat(Current is null ? [] : [Current]);
 
-    public StandupViewModel(Team team, ToastViewModel toast, Action showEditTeam)
+    public StandupNotesViewModel Notes { get; }
+
+    public StandupViewModel(Team team, StandupNotesViewModel notes, ToastViewModel toast, Action showEditTeam)
     {
         _team = team;
+        Notes = notes;
         _toast = toast;
         _showEditTeam = showEditTeam;
         _ticker.Tick += (_, _) => Tick();

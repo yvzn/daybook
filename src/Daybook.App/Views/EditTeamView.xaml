@@ -7,42 +7,6 @@
              xmlns:vm="clr-namespace:Daybook.App.ViewModels"
              mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:EditTeamViewModel}"
              x:Name="Root">
-    <UserControl.Resources>
-        <!-- Name looks like plain text until you click it -->
-        <Style x:Key="InlineEdit" TargetType="TextBox">
-            <Setter Property="FontSize" Value="16" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0,0,0,1.5" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="Padding" Value="2,4" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Style.Triggers>
-                <Trigger Property="IsKeyboardFocused" Value="True">
-                    <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- No selection highlight: this is a list you edit, not one you pick from -->
-        <Style x:Key="MemberRow" TargetType="ListBoxItem">
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ListBoxItem">
-                        <Border x:Name="Bd" Background="Transparent" CornerRadius="6" Padding="4,2">
-                            <ContentPresenter />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource SurfaceTertiaryBrush}" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </UserControl.Resources>
 
     <Grid Margin="24,20,24,20">
         <Grid.RowDefinitions>
@@ -66,7 +30,7 @@
             <TextBlock Text="min" FontSize="15" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
         </StackPanel>
 
-        <ListBox Grid.Row="2" ItemsSource="{Binding Team.Members}" ItemContainerStyle="{StaticResource MemberRow}"
+        <ListBox Grid.Row="2" ItemsSource="{Binding Team.Members}" ItemContainerStyle="{StaticResource EditableRow}"
                  BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True">
             <ListBox.ItemTemplate>

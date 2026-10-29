@@ -2,10 +2,21 @@
 
 A small Windows desktop companion for the work day: one place to see what's on your plate today.
 
-The first section runs **daily standups**: who has spoken, who is next, and how long each person has talked.
-More sections (today's to-dos, notes, end-of-day review) will follow.
+Two tabs:
+
+- **Today**: your tasks for the day (doing, planned, done), with a short morning check-up.
+- **Standup**: who has spoken, who is next, how long each person talked, and your own standup notes.
 
 ## Features
+
+**Today**
+- Type a task and press **Enter**: it lands in **Planned**. **▶ Start** moves it to **Doing**, the checkbox marks it **Done**.
+- **📣** flags a task as worth sharing; flagged tasks show up in **My standup notes** on the Standup tab.
+- A gentle hint appears when more than 3 tasks are in progress.
+- Click a task to rename it; hover and click **✕** to delete (with undo).
+- **Morning check-up**: on a new day a banner offers a 1-minute review in three steps: clear yesterday's done
+  tasks, decide what happened to tasks in progress, keep or drop planned ones. Defaults are right if you just press
+  **Continue**. **Later** leaves everything as it is.
 
 **Standup**
 - Click a name to give them the floor; the previous speaker is marked done automatically.
@@ -16,6 +27,7 @@ More sections (today's to-dos, notes, end-of-day review) will follow.
   date you pick (vacation, sick leave… no reason asked). Off people skip standups automatically and come back the
   next working day after their last day off; click them in the **Away** list to bring them back early.
 - Right-click someone done to let them **talk again**.
+- **My standup notes** lists your 📣 tasks: done yesterday, and doing or planned today.
 - Order is shuffled by default. Every action can be undone from the toast at the bottom; there are no confirmation dialogs.
 
 **Edit team**
@@ -48,7 +60,12 @@ Then run `publish\Daybook.App.exe`.
 
 ## Data
 
-The team, meeting length and "off until" dates are saved to `%AppData%\Daybook\team.json`. Delete that file to start over.
+Everything is saved automatically under `%AppData%\Daybook\`:
+
+- `team.json`: team, meeting length and "off until" dates.
+- `tasks.json`: your tasks, and the date of the last morning check-up.
+
+Delete a file to start that part over.
 The standup itself (who has spoken, timings, "away today") lives in memory only and starts fresh on each launch.
 
 ## Project structure
@@ -59,10 +76,10 @@ Daybook/
 │   ├── daybook.ico        App icon (16, 32, 48, 256 px)
 │   └── icon-sheet.png     Designer's icon sheet, source for the .ico
 ├── src/Daybook.App/       WPF app (MVVM with CommunityToolkit.Mvvm)
-│   ├── Models/            Team, Teammate
-│   ├── Services/          TeamStore: JSON load/save
-│   ├── ViewModels/        Standup, EditTeam, Toast (undo), Main (navigation)
-│   └── Views/             StandupView, EditTeamView
+│   ├── Models/            Team, Teammate, DayTask, TaskList, WorkDays
+│   ├── Services/          TeamStore, TaskStore: JSON load/save
+│   ├── ViewModels/        Today, Checkup, Standup, StandupNotes, EditTeam, Toast (undo), Main (tabs)
+│   └── Views/             TodayView, StandupView, EditTeamView
 └── tools/IconGen/         Builds daybook.ico from icon-sheet.png
 ```
 
