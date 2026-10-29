@@ -1,3 +1,5 @@
+<p align="center"><img src="design/daybook.png" alt="Daybook icon" width="128"></p>
+
 # Daybook
 
 A small Windows desktop companion for the work day: one place to see what's on your plate today.
