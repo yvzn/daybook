@@ -49,7 +49,7 @@ public partial class CheckupViewModel : ObservableObject
         // Empty steps are skipped: no question without something to decide.
         _steps = new List<(string, string, CheckupItem[])>
         {
-            ("Yesterday's done tasks", "Cleared from your list. 📣 ones stay in today's standup notes.",
+            ("Yesterday's done tasks", "Cleared from your list. Shared ones stay in today's standup notes.",
                 Pick(list, t => t.IsDone && t.DoneOn < WorkDays.Today, DoneOptions)),
             ("Still in progress", "Pick what happened to each one.",
                 Pick(list, t => t.IsDoing, DoingOptions)),

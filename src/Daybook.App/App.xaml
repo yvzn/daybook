@@ -26,6 +26,31 @@
         <SolidColorBrush x:Key="WarnBrush" Color="#D97706" />
         <SolidColorBrush x:Key="OverBrush" Color="#DC2626" />
 
+        <!-- Icons: Windows' own icon font (Fluent on Windows 11, MDL2 on Windows 10). WPF can't draw color emoji. -->
+        <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+        <sys:String x:Key="Icon.Settings">&#xE713;</sys:String>
+        <sys:String x:Key="Icon.Check">&#xE73E;</sys:String>
+        <sys:String x:Key="Icon.Play">&#xE768;</sys:String>
+        <sys:String x:Key="Icon.Stop">&#xE71A;</sys:String>
+        <sys:String x:Key="Icon.Close">&#xE711;</sys:String>
+        <sys:String x:Key="Icon.Back">&#xE72B;</sys:String>
+        <sys:String x:Key="Icon.Sun">&#xE706;</sys:String>
+        <sys:String x:Key="Icon.Gripper">&#xE784;</sys:String>
+        <sys:String x:Key="Icon.Megaphone">&#xE789;</sys:String>
+
+        <!-- Icon before a label, e.g. [cog] Edit team -->
+        <Style x:Key="IconGlyph" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,1,6,0" />
+        </Style>
+
+        <!-- Icon alone, e.g. a close button -->
+        <Style x:Key="IconOnly" TargetType="TextBlock" BasedOn="{StaticResource IconGlyph}">
+            <Setter Property="Margin" Value="0" />
+        </Style>
+
         <!-- Page per view model -->
         <DataTemplate DataType="{x:Type vm:StandupViewModel}">
             <views:StandupView />
@@ -110,15 +135,20 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
+                        <!-- Content may be text or icon + text; plain text underlines on hover, icons don't -->
                         <Border Background="Transparent" Padding="{TemplateBinding Padding}">
-                            <TextBlock x:Name="Label" VerticalAlignment="Center"
-                                       Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <ContentPresenter VerticalAlignment="Center">
+                                <ContentPresenter.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}" Value="True">
+                                                <Setter Property="TextDecorations" Value="Underline" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ContentPresenter.Resources>
+                            </ContentPresenter>
                         </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Label" Property="TextDecorations" Value="Underline" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
