@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    env:
+      PROJECT: src/Daybook.App/Daybook.App.csproj
+      RID: win-x64
+      TAG: ${{ github.event.release.tag_name }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Resolve version
+        shell: pwsh
+        run: |
+          $version = $env:TAG -replace '^v', ''
+          if ($version -notmatch '^\d+\.\d+\.\d+([-+].*)?$') { $version = '1.0.0' }
+          "VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: Restore
+        run: dotnet restore ${{ env.PROJECT }} -r ${{ env.RID }}
+
+      - name: Publish framework-dependent
+        run: >
+          dotnet publish ${{ env.PROJECT }} -c Release -r ${{ env.RID }} --no-restore
+          --self-contained false
+          -p:PublishSingleFile=true
+          -p:DebugType=none
+          -p:Version=${{ env.VERSION }}
+          -o out/framework-dependent
+
+      - name: Publish self-contained
+        run: >
+          dotnet publish ${{ env.PROJECT }} -c Release -r ${{ env.RID }} --no-restore
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+          -p:DebugType=none
+          -p:Version=${{ env.VERSION }}
+          -o out/self-contained
+
+      - name: Zip binaries
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          foreach ($flavor in 'framework-dependent', 'self-contained') {
+            Compress-Archive -Path "out/$flavor/Daybook.App.exe" `
+              -DestinationPath "dist/Daybook-$env:TAG-$env:RID-$flavor.zip" -Force
+          }
+
+      - name: Attach to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: gh release upload "$env:TAG" (Get-ChildItem dist/*.zip).FullName --clobber
