@@ -12,6 +12,7 @@ Two tabs:
 **Today**
 - Type a task and press **Enter**: it lands in **Planned**. **▶ Start** moves it to **Doing**, the checkbox marks it **Done**.
 - **📣** flags a task as worth sharing; flagged tasks show up in **My standup notes** on the Standup tab.
+  New tasks are flagged by default: click 📣 to keep a task private.
 - A gentle hint appears when more than 3 tasks are in progress.
 - Click a task to rename it; hover and click **✕** to delete (with undo).
 - **Morning check-up**: on a new day a banner offers a 1-minute review in three steps: clear yesterday's done
