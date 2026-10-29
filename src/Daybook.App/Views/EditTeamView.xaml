@@ -18,8 +18,12 @@
         </Grid.RowDefinitions>
 
         <DockPanel Grid.Row="0">
-            <Button DockPanel.Dock="Left" Content="← Back to standup" Command="{Binding BackCommand}"
-                    Style="{StaticResource LinkButton}" Margin="-6,0,0,0" />
+            <Button DockPanel.Dock="Left" Command="{Binding BackCommand}" Style="{StaticResource LinkButton}" Margin="-6,0,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource IconGlyph}" Text="{StaticResource Icon.Back}" />
+                    <TextBlock Text="Back to standup" />
+                </StackPanel>
+            </Button>
             <TextBlock Text="Edit team" Style="{StaticResource PageTitle}" HorizontalAlignment="Right" />
         </DockPanel>
 
@@ -43,8 +47,9 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="⋮⋮" Foreground="{StaticResource TextTertiaryBrush}" FontSize="16" Cursor="SizeAll"
-                                   VerticalAlignment="Center" Margin="4,0,10,0" ToolTip="Drag to reorder" />
+                        <TextBlock Style="{StaticResource IconOnly}" Text="{StaticResource Icon.Gripper}" FontSize="14"
+                                   Foreground="{StaticResource TextTertiaryBrush}" Background="Transparent" Cursor="SizeAll"
+                                   Margin="4,0,10,0" ToolTip="Drag to reorder" />
 
                         <TextBox Grid.Column="1" Style="{StaticResource InlineEdit}" dd:DragDrop.DragSourceIgnore="True"
                                  Text="{Binding Name, UpdateSourceTrigger=Explicit}"
@@ -57,16 +62,19 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding OffLabel}" FontSize="12" VerticalAlignment="Center"
                                            Foreground="{StaticResource TextSecondaryBrush}" />
-                                <Button Content="✕" ToolTip="Back now" Style="{StaticResource LinkButton}" FontSize="11"
+                                <Button ToolTip="Back now" Style="{StaticResource LinkButton}"
                                         Foreground="{StaticResource TextSecondaryBrush}" Padding="6,0"
-                                        Command="{Binding DataContext.ClearOffCommand, ElementName=Root}" CommandParameter="{Binding}" />
+                                        Command="{Binding DataContext.ClearOffCommand, ElementName=Root}" CommandParameter="{Binding}">
+                                    <TextBlock Style="{StaticResource IconOnly}" Text="{StaticResource Icon.Close}" FontSize="9" />
+                                </Button>
                             </StackPanel>
                         </Border>
 
-                        <Button Grid.Column="3" Content="✕" ToolTip="Remove"
-                                Foreground="{StaticResource TextSecondaryBrush}" FontSize="14" Margin="8,0,4,0"
+                        <Button Grid.Column="3" ToolTip="Remove"
+                                Foreground="{StaticResource TextSecondaryBrush}" Margin="8,0,4,0"
                                 dd:DragDrop.DragSourceIgnore="True"
                                 Command="{Binding DataContext.RemoveCommand, ElementName=Root}" CommandParameter="{Binding}">
+                            <TextBlock Style="{StaticResource IconOnly}" Text="{StaticResource Icon.Close}" FontSize="12" />
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource LinkButton}">
                                     <Setter Property="Opacity" Value="0" />

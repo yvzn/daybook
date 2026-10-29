@@ -7,7 +7,7 @@
              mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:TodayViewModel}"
              x:Name="Root">
     <UserControl.Resources>
-        <!-- 📣 faded when not shared, solid when shared -->
+        <!-- Megaphone: grey when private, blue when shared -->
         <Style x:Key="ShareToggle" TargetType="ToggleButton">
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Focusable" Value="False" />
@@ -16,14 +16,15 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
                         <Border Background="Transparent" Padding="6,2">
-                            <TextBlock x:Name="Icon" Text="📣" FontSize="15" Opacity="0.25" VerticalAlignment="Center" />
+                            <TextBlock x:Name="Icon" Style="{StaticResource IconOnly}" Text="{StaticResource Icon.Megaphone}"
+                                       FontSize="16" Foreground="{StaticResource TextTertiaryBrush}" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Icon" Property="Opacity" Value="0.6" />
+                                <Setter TargetName="Icon" Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Icon" Property="Opacity" Value="1" />
+                                <Setter TargetName="Icon" Property="Foreground" Value="{StaticResource AccentBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -31,7 +32,7 @@
             </Setter>
         </Style>
 
-        <!-- One task: ☐ title 📣 ▶ Start ✕ -->
+        <!-- One task: [checkbox] title [megaphone] [start/stop] [delete] -->
         <DataTemplate x:Key="TaskRow">
             <Border x:Name="Row" Background="Transparent" CornerRadius="6" Padding="4,1">
                 <Grid>
@@ -62,20 +63,32 @@
 
                     <ToggleButton Grid.Column="2" IsChecked="{Binding IsShared}" Style="{StaticResource ShareToggle}" />
 
-                    <Button Grid.Column="3" Content="▶ Start" Style="{StaticResource LinkButton}" MinWidth="64"
+                    <Button Grid.Column="3" Style="{StaticResource LinkButton}" MinWidth="72"
                             Visibility="{Binding IsPlanned, Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding DataContext.StartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                            CommandParameter="{Binding}" />
-                    <Button Grid.Column="3" Content="■ Stop" Style="{StaticResource LinkButton}" MinWidth="64"
+                            CommandParameter="{Binding}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource IconGlyph}" Text="{StaticResource Icon.Play}" FontSize="11" />
+                            <TextBlock Text="Start" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Column="3" Style="{StaticResource LinkButton}" MinWidth="72"
                             Foreground="{StaticResource TextSecondaryBrush}"
                             Visibility="{Binding IsDoing, Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding DataContext.StopCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                            CommandParameter="{Binding}" />
+                            CommandParameter="{Binding}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource IconGlyph}" Text="{StaticResource Icon.Stop}" FontSize="11" />
+                            <TextBlock Text="Stop" />
+                        </StackPanel>
+                    </Button>
 
-                    <Button x:Name="DeleteButton" Grid.Column="4" Content="✕" ToolTip="Delete" Opacity="0"
+                    <Button x:Name="DeleteButton" Grid.Column="4" ToolTip="Delete" Opacity="0"
                             Style="{StaticResource LinkButton}" Foreground="{StaticResource TextSecondaryBrush}"
                             Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                            CommandParameter="{Binding}" />
+                            CommandParameter="{Binding}">
+                        <TextBlock Style="{StaticResource IconOnly}" Text="{StaticResource Icon.Close}" FontSize="12" />
+                    </Button>
                 </Grid>
             </Border>
             <DataTemplate.Triggers>
@@ -111,8 +124,11 @@
                     <Button Content="Start" Command="{Binding StartCheckupCommand}" Style="{StaticResource PrimaryButton}"
                             FontSize="14" Padding="16,6" />
                 </StackPanel>
-                <TextBlock Text="☀ New day. Review yesterday's tasks? (1 min)" FontSize="15" VerticalAlignment="Center"
-                           Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" />
+                <TextBlock FontSize="15" VerticalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap">
+                    <Run Text="{StaticResource Icon.Sun}" FontFamily="{StaticResource IconFont}" FontSize="16"
+                         Foreground="{StaticResource WarnBrush}" />
+                    <Run Text=" New day. Review yesterday's tasks? (1 min)" />
+                </TextBlock>
             </DockPanel>
         </Border>
 
@@ -186,13 +202,13 @@
                                 <StackPanel>
                                     <TextBlock FontSize="15" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap">
                                         <Run Text="{Binding Task.Title, Mode=OneWay}" />
-                                        <Run>
+                                        <Run FontFamily="{StaticResource IconFont}" FontSize="13" Foreground="{StaticResource AccentBrush}">
                                             <Run.Style>
                                                 <Style TargetType="Run">
                                                     <Setter Property="Text" Value="" />
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding Task.IsShared}" Value="True">
-                                                            <Setter Property="Text" Value=" 📣" />
+                                                            <Setter Property="Text" Value="{StaticResource Icon.Megaphone}" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>

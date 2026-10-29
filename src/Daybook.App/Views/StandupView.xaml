@@ -6,6 +6,32 @@
              xmlns:vm="clr-namespace:Daybook.App.ViewModels"
              mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:StandupViewModel}"
              x:Name="Root">
+    <UserControl.Resources>
+        <!-- Notes line: icon column (play = doing, check = done, none = planned), then the task -->
+        <DataTemplate x:Key="NoteLineTemplate" DataType="{x:Type vm:NoteLine}">
+            <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="Icon" FontFamily="{StaticResource IconFont}" FontSize="11" Margin="0,4,0,0"
+                           Foreground="{StaticResource TextSecondaryBrush}" />
+                <TextBlock Grid.Column="1" Text="{Binding Text}" FontSize="14" TextWrapping="Wrap"
+                           Foreground="{StaticResource TextPrimaryBrush}" />
+            </Grid>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Kind}" Value="Done">
+                    <Setter TargetName="Icon" Property="Text" Value="{StaticResource Icon.Check}" />
+                    <Setter TargetName="Icon" Property="Foreground" Value="{StaticResource GoodBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Kind}" Value="Doing">
+                    <Setter TargetName="Icon" Property="Text" Value="{StaticResource Icon.Play}" />
+                    <Setter TargetName="Icon" Property="Foreground" Value="{StaticResource AccentBrush}" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+    </UserControl.Resources>
+
     <Grid Margin="24,20,24,20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -32,7 +58,12 @@
                         </Style>
                     </TextBlock.Style>
                 </TextBlock>
-                <Button Content="⚙ Edit team" Command="{Binding EditTeamCommand}" Style="{StaticResource LinkButton}" />
+                <Button Command="{Binding EditTeamCommand}" Style="{StaticResource LinkButton}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource IconGlyph}" Text="{StaticResource Icon.Settings}" />
+                        <TextBlock Text="Edit team" />
+                    </StackPanel>
+                </Button>
                 <Button Content="Reset" Command="{Binding ResetCommand}" Style="{StaticResource LinkButton}" />
             </StackPanel>
         </DockPanel>
@@ -47,7 +78,8 @@
                     <TextBlock DockPanel.Dock="Right" Text="{Binding TimeText}" FontSize="18" VerticalAlignment="Center"
                                Foreground="{StaticResource TextSecondaryBrush}" />
                     <TextBlock FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}">
-                        <Run Text="▶" Foreground="{StaticResource AccentBrush}" />
+                        <Run Text="{StaticResource Icon.Play}" FontFamily="{StaticResource IconFont}" FontSize="18"
+                             Foreground="{StaticResource AccentBrush}" />
                         <Run Text="{Binding Teammate.Name, Mode=OneWay}" />
                         <Run Text="talking" FontWeight="Normal" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
                     </TextBlock>
@@ -63,8 +95,12 @@
                         HorizontalAlignment="Center" Margin="0,80,0,0"
                         Visibility="{Binding HasTeam, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}" />
 
-                <TextBlock Text="✓ Everyone has spoken" FontSize="20" Foreground="{StaticResource GoodBrush}" Margin="0,20,0,0"
-                           Visibility="{Binding IsFinished, Converter={StaticResource BoolToVisibility}}" />
+                <StackPanel Orientation="Horizontal" Margin="0,20,0,0"
+                            Visibility="{Binding IsFinished, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Style="{StaticResource IconGlyph}" Text="{StaticResource Icon.Check}" FontSize="18"
+                               Foreground="{StaticResource GoodBrush}" Margin="0,2,10,0" />
+                    <TextBlock Text="Everyone has spoken" FontSize="20" Foreground="{StaticResource GoodBrush}" />
+                </StackPanel>
 
                 <TextBlock Text="Up next" Style="{StaticResource SectionLabel}"
                            Visibility="{Binding HasWaiting, Converter={StaticResource BoolToVisibility}}" />
@@ -126,7 +162,7 @@
                                         </Style.Triggers>
                                     </Style>
                                 </TextBlock.Style>
-                                <Run Text="✓" /> <Run Text="{Binding Teammate.Name, Mode=OneWay}" /> <Run Text="{Binding ElapsedText, Mode=OneWay}" />
+                                <Run Text="{StaticResource Icon.Check}" FontFamily="{StaticResource IconFont}" FontSize="12" /> <Run Text="{Binding Teammate.Name, Mode=OneWay}" /> <Run Text="{Binding ElapsedText, Mode=OneWay}" />
                                 <TextBlock.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="Talk again"
@@ -178,27 +214,13 @@
 
                     <TextBlock Text="Yesterday" Foreground="{StaticResource TextSecondaryBrush}" FontSize="14" Margin="0,2,16,2"
                                Visibility="{Binding HasYesterday, Converter={StaticResource BoolToVisibility}}" />
-                    <ItemsControl Grid.Column="1" ItemsSource="{Binding Yesterday}"
-                                  Visibility="{Binding HasYesterday, Converter={StaticResource BoolToVisibility}}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding StringFormat=✓ {0}}" FontSize="14" Margin="0,2"
-                                           Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    <ItemsControl Grid.Column="1" ItemsSource="{Binding Yesterday}" ItemTemplate="{StaticResource NoteLineTemplate}"
+                                  Visibility="{Binding HasYesterday, Converter={StaticResource BoolToVisibility}}" />
 
                     <TextBlock Grid.Row="1" Text="Today" Foreground="{StaticResource TextSecondaryBrush}" FontSize="14" Margin="0,2,16,2"
                                Visibility="{Binding HasToday, Converter={StaticResource BoolToVisibility}}" />
-                    <ItemsControl Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Today}"
-                                  Visibility="{Binding HasToday, Converter={StaticResource BoolToVisibility}}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}" FontSize="14" Margin="0,2"
-                                           Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    <ItemsControl Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Today}" ItemTemplate="{StaticResource NoteLineTemplate}"
+                                  Visibility="{Binding HasToday, Converter={StaticResource BoolToVisibility}}" />
                 </Grid>
             </Border>
         </Expander>
@@ -209,7 +231,12 @@
             <Button DockPanel.Dock="Right" Content="Shuffle" Command="{Binding ShuffleCommand}"
                     Style="{StaticResource LinkButton}" VerticalAlignment="Center" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Next ▶" Command="{Binding NextCommand}" Style="{StaticResource PrimaryButton}" MinWidth="160" />
+                <Button Command="{Binding NextCommand}" Style="{StaticResource PrimaryButton}" MinWidth="160">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Next" />
+                        <TextBlock Style="{StaticResource IconGlyph}" Text="{StaticResource Icon.Play}" Margin="8,2,0,0" />
+                    </StackPanel>
+                </Button>
                 <TextBlock Text="Space" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="10,0,0,0" />
             </StackPanel>
         </DockPanel>
