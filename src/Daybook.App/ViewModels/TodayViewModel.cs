@@ -63,7 +63,8 @@ public partial class TodayViewModel : ObservableObject
         var title = NewTitle.Trim();
         if (title.Length == 0) return;
 
-        List.Items.Add(new DayTask(title));
+        // Shared by default: most of the day's work is standup material; 📣 off is for private tasks.
+        List.Items.Add(new DayTask(title) { IsShared = true });
         NewTitle = "";
     }
 
