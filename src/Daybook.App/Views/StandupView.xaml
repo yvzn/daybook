@@ -1,0 +1,183 @@
+<UserControl x:Class="Daybook.App.Views.StandupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Daybook.App.ViewModels"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:StandupViewModel}"
+             x:Name="Root">
+    <Grid Margin="24,20,24,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header: where am I, how much time is left -->
+        <DockPanel Grid.Row="0" LastChildFill="False">
+            <TextBlock DockPanel.Dock="Left" Text="Standup" Style="{StaticResource PageTitle}" />
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="{Binding MeetingClock}" FontSize="20" FontWeight="SemiBold"
+                           VerticalAlignment="Center" Margin="0,0,16,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsMeetingOver}" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource OverBrush}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <Button Content="⚙ Edit team" Command="{Binding EditTeamCommand}" Style="{StaticResource LinkButton}" />
+                <Button Content="Reset" Command="{Binding ResetCommand}" Style="{StaticResource LinkButton}" />
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Who is talking now -->
+        <Border Grid.Row="1" Margin="0,16,0,0" Padding="18,14" CornerRadius="10"
+                Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="2"
+                DataContext="{Binding Current}"
+                Visibility="{Binding DataContext.HasCurrent, ElementName=Root, Converter={StaticResource BoolToVisibility}}">
+            <StackPanel>
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding TimeText}" FontSize="18" VerticalAlignment="Center"
+                               Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}">
+                        <Run Text="▶" Foreground="{StaticResource AccentBrush}" />
+                        <Run Text="{Binding Teammate.Name, Mode=OneWay}" />
+                        <Run Text="talking" FontWeight="Normal" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </TextBlock>
+                </DockPanel>
+                <ProgressBar Value="{Binding BarValue, Mode=OneWay}" Style="{StaticResource TurnBar}" Margin="0,12,0,0" />
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- First launch: one obvious next step -->
+                <Button Content="Add your team" Command="{Binding EditTeamCommand}" Style="{StaticResource PrimaryButton}"
+                        HorizontalAlignment="Center" Margin="0,80,0,0"
+                        Visibility="{Binding HasTeam, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}" />
+
+                <TextBlock Text="✓ Everyone has spoken" FontSize="20" Foreground="{StaticResource GoodBrush}" Margin="0,20,0,0"
+                           Visibility="{Binding IsFinished, Converter={StaticResource BoolToVisibility}}" />
+
+                <TextBlock Text="Up next" Style="{StaticResource SectionLabel}"
+                           Visibility="{Binding HasWaiting, Converter={StaticResource BoolToVisibility}}" />
+                <ItemsControl ItemsSource="{Binding Waiting}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding Teammate.Name}" Style="{StaticResource TileButton}"
+                                    Command="{Binding DataContext.TalkCommand, ElementName=Root}" CommandParameter="{Binding}"
+                                    Tag="{Binding DataContext, ElementName=Root}" ToolTip="Click: talking now · Right-click: away or off">
+                                <Button.ContextMenu>
+                                    <!-- Flat menu, no submenu: each choice is one click. No reason asked: it changes nothing. -->
+                                    <ContextMenu>
+                                        <MenuItem Header="Away today"
+                                                  Command="{Binding PlacementTarget.Tag.MarkAwayCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                  CommandParameter="{Binding}" />
+                                        <Separator />
+                                        <MenuItem Header="{Binding PlacementTarget.Tag.OffTomorrowLabel, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                  Command="{Binding PlacementTarget.Tag.OffTomorrowCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                  CommandParameter="{Binding}" />
+                                        <MenuItem Header="{Binding PlacementTarget.Tag.OffEndOfWeekLabel, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                  Command="{Binding PlacementTarget.Tag.OffEndOfWeekCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                  CommandParameter="{Binding}" />
+                                        <MenuItem Header="{Binding PlacementTarget.Tag.OffEndOfNextWeekLabel, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                  Command="{Binding PlacementTarget.Tag.OffEndOfNextWeekCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                  CommandParameter="{Binding}" />
+                                        <MenuItem Header="Off until… (pick a date)" Click="PickOffDate_Click" />
+                                    </ContextMenu>
+                                </Button.ContextMenu>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Text="Done" Style="{StaticResource SectionLabel}"
+                           Visibility="{Binding HasDone, Converter={StaticResource BoolToVisibility}}" />
+                <ItemsControl ItemsSource="{Binding Done}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <!-- Flat text: done people do not look clickable. Right-click to let them talk again. -->
+                            <TextBlock FontSize="15" Margin="0,0,18,6" Background="Transparent"
+                                       Tag="{Binding DataContext, ElementName=Root}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Level}" Value="Over">
+                                                <Setter Property="Foreground" Value="{StaticResource OverBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                                <Run Text="✓" /> <Run Text="{Binding Teammate.Name, Mode=OneWay}" /> <Run Text="{Binding ElapsedText, Mode=OneWay}" />
+                                <TextBlock.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Talk again"
+                                                  Command="{Binding PlacementTarget.Tag.TalkCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                  CommandParameter="{Binding}" />
+                                    </ContextMenu>
+                                </TextBlock.ContextMenu>
+                            </TextBlock>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Text="Away" Style="{StaticResource SectionLabel}"
+                           Visibility="{Binding HasAway, Converter={StaticResource BoolToVisibility}}" />
+                <ItemsControl ItemsSource="{Binding Away}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Style="{StaticResource LinkButton}" Foreground="{StaticResource TextSecondaryBrush}"
+                                    Content="{Binding AwayText}" ToolTip="Click: back today"
+                                    Command="{Binding DataContext.MarkBackCommand, ElementName=Root}" CommandParameter="{Binding}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer: the one thing you do over and over -->
+        <DockPanel Grid.Row="3" Margin="0,16,0,0"
+                   Visibility="{Binding HasTeam, Converter={StaticResource BoolToVisibility}}">
+            <Button DockPanel.Dock="Right" Content="Shuffle" Command="{Binding ShuffleCommand}"
+                    Style="{StaticResource LinkButton}" VerticalAlignment="Center" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Next ▶" Command="{Binding NextCommand}" Style="{StaticResource PrimaryButton}" MinWidth="160" />
+                <TextBlock Text="Space" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="10,0,0,0" />
+            </StackPanel>
+        </DockPanel>
+
+        <!-- "Off until… (pick a date)": calendar at the mouse, one click picks the last day off -->
+        <Popup x:Name="OffDatePopup" Placement="MousePoint" StaysOpen="False" AllowsTransparency="True">
+            <Border Background="{StaticResource SurfacePrimaryBrush}" BorderBrush="{StaticResource BorderDefaultBrush}"
+                    BorderThickness="1" CornerRadius="8" Padding="8">
+                <StackPanel>
+                    <TextBlock Text="Last day off" Style="{StaticResource SectionLabel}" Margin="4,0,0,6" />
+                    <Calendar x:Name="OffCalendar" SelectedDatesChanged="OffCalendar_SelectedDatesChanged"
+                              PreviewMouseUp="OffCalendar_PreviewMouseUp" />
+                </StackPanel>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>
