@@ -12,6 +12,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- Header: where am I, how much time is left -->
@@ -157,8 +158,53 @@
             </StackPanel>
         </ScrollViewer>
 
+        <!-- My standup notes: the 📣 tasks from Today, for when it's your turn -->
+        <Expander Grid.Row="3" DataContext="{Binding Notes}" IsExpanded="True" Margin="0,12,0,0"
+                  Visibility="{Binding HasNotes, Converter={StaticResource BoolToVisibility}}">
+            <Expander.Header>
+                <TextBlock Text="My standup notes" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
+            </Expander.Header>
+            <Border Background="{StaticResource SurfaceSecondaryBrush}" BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,6,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Yesterday" Foreground="{StaticResource TextSecondaryBrush}" FontSize="14" Margin="0,2,16,2"
+                               Visibility="{Binding HasYesterday, Converter={StaticResource BoolToVisibility}}" />
+                    <ItemsControl Grid.Column="1" ItemsSource="{Binding Yesterday}"
+                                  Visibility="{Binding HasYesterday, Converter={StaticResource BoolToVisibility}}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding StringFormat=✓ {0}}" FontSize="14" Margin="0,2"
+                                           Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Grid.Row="1" Text="Today" Foreground="{StaticResource TextSecondaryBrush}" FontSize="14" Margin="0,2,16,2"
+                               Visibility="{Binding HasToday, Converter={StaticResource BoolToVisibility}}" />
+                    <ItemsControl Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Today}"
+                                  Visibility="{Binding HasToday, Converter={StaticResource BoolToVisibility}}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" FontSize="14" Margin="0,2"
+                                           Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </Border>
+        </Expander>
+
         <!-- Footer: the one thing you do over and over -->
-        <DockPanel Grid.Row="3" Margin="0,16,0,0"
+        <DockPanel Grid.Row="4" Margin="0,16,0,0"
                    Visibility="{Binding HasTeam, Converter={StaticResource BoolToVisibility}}">
             <Button DockPanel.Dock="Right" Content="Shuffle" Command="{Binding ShuffleCommand}"
                     Style="{StaticResource LinkButton}" VerticalAlignment="Center" />
