@@ -25,9 +25,14 @@ jobs:
       - name: Resolve version
         shell: pwsh
         run: |
-          $version = $env:TAG -replace '^v', ''
-          if ($version -notmatch '^\d+\.\d+\.\d+([-+].*)?$') { $version = '1.0.0' }
-          "VERSION=$version" >> $env:GITHUB_ENV
+          # v0.1 -> 0.1.0, v1.2.3-beta -> 1.2.3 + beta
+          if ($env:TAG -notmatch '^v?(\d+(?:\.\d+){0,3})(?:-([0-9A-Za-z.-]+))?$') {
+            throw "Tag '$env:TAG' is not a version (expected e.g. v1.2 or v1.2.3-beta)"
+          }
+          $parts = $Matches[1].Split('.')
+          while ($parts.Count -lt 3) { $parts += '0' }
+          "VERSION_PREFIX=$($parts -join '.')" >> $env:GITHUB_ENV
+          "VERSION_SUFFIX=$($Matches[2])" >> $env:GITHUB_ENV
 
       - name: Restore
         run: dotnet restore ${{ env.PROJECT }} -r ${{ env.RID }}
@@ -38,7 +43,8 @@ jobs:
           --self-contained false
           -p:PublishSingleFile=true
           -p:DebugType=none
-          -p:Version=${{ env.VERSION }}
+          -p:VersionPrefix=${{ env.VERSION_PREFIX }}
+          -p:VersionSuffix=${{ env.VERSION_SUFFIX }}
           -o out/framework-dependent
 
       - name: Publish self-contained
@@ -49,7 +55,8 @@ jobs:
           -p:IncludeNativeLibrariesForSelfExtract=true
           -p:EnableCompressionInSingleFile=true
           -p:DebugType=none
-          -p:Version=${{ env.VERSION }}
+          -p:VersionPrefix=${{ env.VERSION_PREFIX }}
+          -p:VersionSuffix=${{ env.VERSION_SUFFIX }}
           -o out/self-contained
 
       - name: Zip binaries
