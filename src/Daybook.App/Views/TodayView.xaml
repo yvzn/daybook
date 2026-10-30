@@ -37,7 +37,7 @@
             </Setter>
         </Style>
 
-        <!-- One task: [checkbox] title [standup pill] [start/stop] [delete] -->
+        <!-- One task: [checkbox] title [start/stop] [standup pill] [delete]. Pill before delete so it lines up across sections -->
         <DataTemplate x:Key="TaskRow">
             <Border x:Name="Row" Background="Transparent" CornerRadius="6" Padding="4,1">
                 <Grid>
@@ -66,10 +66,10 @@
                         </TextBox.Style>
                     </TextBox>
 
-                    <ToggleButton Grid.Column="2" IsChecked="{Binding IsShared}" Style="{StaticResource ShareToggle}"
-                                  Margin="8,0,16,0" />
+                    <ToggleButton Grid.Column="3" IsChecked="{Binding IsShared}" Style="{StaticResource ShareToggle}"
+                                  Margin="16,0,4,0" />
 
-                    <Button Grid.Column="3" Style="{StaticResource LinkButton}" MinWidth="72"
+                    <Button Grid.Column="2" Style="{StaticResource LinkButton}" MinWidth="72"
                             Visibility="{Binding IsPlanned, Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding DataContext.StartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                             CommandParameter="{Binding}">
@@ -78,7 +78,7 @@
                             <TextBlock Text="Start" />
                         </StackPanel>
                     </Button>
-                    <Button Grid.Column="3" Style="{StaticResource LinkButton}" MinWidth="72"
+                    <Button Grid.Column="2" Style="{StaticResource LinkButton}" MinWidth="72"
                             Foreground="{StaticResource TextSecondaryBrush}"
                             Visibility="{Binding IsDoing, Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding DataContext.StopCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
