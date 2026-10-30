@@ -7,24 +7,29 @@
              mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:TodayViewModel}"
              x:Name="Root">
     <UserControl.Resources>
-        <!-- Megaphone: grey when private, blue when shared -->
+        <!-- "Standup" pill: a tag, not a button. Soft blue when shared, grey outline when private -->
         <Style x:Key="ShareToggle" TargetType="ToggleButton">
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Focusable" Value="False" />
             <Setter Property="ToolTip" Value="Share at standup" />
+            <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
-                        <Border Background="Transparent" Padding="6,2">
-                            <TextBlock x:Name="Icon" Style="{StaticResource IconOnly}" Text="{StaticResource Icon.Megaphone}"
-                                       FontSize="16" Foreground="{StaticResource TextTertiaryBrush}" />
+                        <Border x:Name="Pill" CornerRadius="9" Padding="8,1" BorderThickness="1"
+                                Background="Transparent" BorderBrush="{StaticResource BorderSubtleBrush}">
+                            <TextBlock x:Name="Label" Text="Standup" FontSize="11"
+                                       Foreground="{StaticResource TextTertiaryBrush}" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Icon" Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                                <Setter TargetName="Label" Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                                <Setter TargetName="Pill" Property="BorderBrush" Value="{StaticResource BorderDefaultBrush}" />
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Icon" Property="Foreground" Value="{StaticResource AccentBrush}" />
+                                <Setter TargetName="Pill" Property="Background" Value="{StaticResource AccentSoftBrush}" />
+                                <Setter TargetName="Pill" Property="BorderBrush" Value="{StaticResource AccentSoftBrush}" />
+                                <Setter TargetName="Label" Property="Foreground" Value="{StaticResource AccentBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -32,7 +37,7 @@
             </Setter>
         </Style>
 
-        <!-- One task: [checkbox] title [megaphone] [start/stop] [delete] -->
+        <!-- One task: [checkbox] title [standup pill] [start/stop] [delete] -->
         <DataTemplate x:Key="TaskRow">
             <Border x:Name="Row" Background="Transparent" CornerRadius="6" Padding="4,1">
                 <Grid>
@@ -61,7 +66,8 @@
                         </TextBox.Style>
                     </TextBox>
 
-                    <ToggleButton Grid.Column="2" IsChecked="{Binding IsShared}" Style="{StaticResource ShareToggle}" />
+                    <ToggleButton Grid.Column="2" IsChecked="{Binding IsShared}" Style="{StaticResource ShareToggle}"
+                                  Margin="8,0,16,0" />
 
                     <Button Grid.Column="3" Style="{StaticResource LinkButton}" MinWidth="72"
                             Visibility="{Binding IsPlanned, Converter={StaticResource BoolToVisibility}}"
