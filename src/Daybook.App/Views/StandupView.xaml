@@ -236,9 +236,7 @@
                         <TextBlock Text="Next" />
                         <TextBlock Style="{StaticResource IconGlyph}" Text="{StaticResource Icon.Play}" Margin="8,2,0,0" />
                     </StackPanel>
-                </Button>
-                <TextBlock Text="Space" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="10,0,0,0" />
-            </StackPanel>
+                </Button>            </StackPanel>
         </DockPanel>
 
         <!-- "Off until… (pick a date)": calendar at the mouse, one click picks the last day off -->

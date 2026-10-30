@@ -135,23 +135,23 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <!-- Content may be text or icon + text; plain text underlines on hover, icons don't -->
                         <Border Background="Transparent" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter VerticalAlignment="Center">
-                                <ContentPresenter.Resources>
-                                    <Style TargetType="TextBlock">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}" Value="True">
-                                                <Setter Property="TextDecorations" Value="Underline" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ContentPresenter.Resources>
-                            </ContentPresenter>
+                            <ContentPresenter VerticalAlignment="Center" />
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <!-- Implicit style lives here (not in the template) so it also reaches the label of icon + text content;
+                 icon TextBlocks set an explicit Style, so they never underline -->
+            <Style.Resources>
+                <Style TargetType="TextBlock">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}" Value="True">
+                            <Setter Property="TextDecorations" Value="Underline" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Style.Resources>
         </Style>
 
         <!-- Tab strip (Today | Standup). Tag = is this the current tab -->
