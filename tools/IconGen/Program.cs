@@ -1,5 +1,6 @@
 // Builds design/daybook.ico from the designer's sheet (design/icon-sheet.png):
-// crops the large icon at the top, removes its drop shadow, and scales it to 16, 32, 48 and 256 px.
+// removes the sheet background and drop shadows, cuts out each icon (the designer drew the small
+// ones separately, with simpler details) and writes every size into the .ico.
 //
 // Usage: dotnet run --project tools/IconGen -- <sheet.png> <ico> [previewPng]
 
@@ -10,14 +11,18 @@ using System.Windows.Media.Imaging;
 
 internal static class Program
 {
-    private static readonly int[] Sizes = [16, 32, 48, 256];
+    /// <summary>Sizes on the sheet, largest icon first.</summary>
+    private static readonly int[] Sizes = [256, 128, 64, 48, 32, 24, 16];
+
+    /// <summary>Smallest bounding box side of a piece that counts as an icon, not a label or speck.</summary>
+    private const int MinIconSide = 40;
 
     [STAThread]
     private static void Main(string[] args)
     {
         var sheet = Load(args[0]);
-        var icon = Square(Trim(RemoveShadow(TopIcon(sheet))));
-        var frames = Sizes.ToDictionary(size => size, size => Scale(icon, size));
+        var icons = Icons(Erode(RemoveBackground(sheet)));
+        var frames = Sizes.Zip(icons).ToDictionary(pair => pair.First, pair => Scale(Square(pair.Second), pair.First));
 
         WriteIco(args[1], frames);
         if (args.Length > 2) WritePreview(args[2], frames);
@@ -31,14 +36,11 @@ internal static class Program
         return Pixels.From(new FormatConvertedBitmap(frame, PixelFormats.Bgra32, null, 0));
     }
 
-    /// <summary>The large icon sits in the top two thirds; the small previews and labels sit below.</summary>
-    private static Pixels TopIcon(Pixels sheet) => Trim(sheet.Sub(0, 0, sheet.Width, sheet.Height * 2 / 3));
-
     /// <summary>
-    /// The drop shadow is light grey. Flood-fill from the transparent surroundings across grey pixels
-    /// and clear them; the white sun and cream pages are inside the blue cover, so the fill never reaches them.
+    /// The sheet has an opaque off-white background with light grey shadows. Flood-fill from the edges across
+    /// those pixels and clear them. The cream pages are yellowish (blue below red), so the fill stops at them.
     /// </summary>
-    private static Pixels RemoveShadow(Pixels img)
+    private static Pixels RemoveBackground(Pixels img)
     {
         var seen = new bool[img.Width * img.Height];
         var queue = new Queue<(int X, int Y)>();
@@ -50,7 +52,7 @@ internal static class Program
             var (x, y) = queue.Dequeue();
             if (x < 0 || y < 0 || x >= img.Width || y >= img.Height || seen[y * img.Width + x]) continue;
             seen[y * img.Width + x] = true;
-            if (img.Alpha(x, y) != 0 && !IsGrey(img, x, y)) continue;
+            if (img.Alpha(x, y) != 0 && !IsBackground(img, x, y)) continue;
 
             img.SetAlpha(x, y, 0);
             queue.Enqueue((x + 1, y)); queue.Enqueue((x - 1, y));
@@ -59,25 +61,69 @@ internal static class Program
         return img;
     }
 
-    private static bool IsGrey(Pixels img, int x, int y)
+    /// <summary>Drops the outermost visible pixels: antialiased edges still carry a light fringe of the sheet background.</summary>
+    private static Pixels Erode(Pixels img)
     {
-        var (b, g, r) = img.Rgb(x, y);
-        return Math.Max(r, Math.Max(g, b)) - Math.Min(r, Math.Min(g, b)) <= 32;
-    }
-
-    /// <summary>Crops to the visible pixels.</summary>
-    private static Pixels Trim(Pixels img)
-    {
-        int top = int.MaxValue, left = int.MaxValue, bottom = 0, right = 0;
+        var edge = new List<(int X, int Y)>();
         for (var y = 0; y < img.Height; y++)
             for (var x = 0; x < img.Width; x++)
-                if (img.Alpha(x, y) != 0)
-                {
-                    top = Math.Min(top, y); bottom = Math.Max(bottom, y);
-                    left = Math.Min(left, x); right = Math.Max(right, x);
-                }
+                if (img.Alpha(x, y) != 0 && (img.Alpha(x - 1, y) == 0 || img.Alpha(x + 1, y) == 0 ||
+                                             img.Alpha(x, y - 1) == 0 || img.Alpha(x, y + 1) == 0))
+                    edge.Add((x, y));
 
-        return img.Sub(left, top, right - left + 1, bottom - top + 1);
+        foreach (var (x, y) in edge) img.SetAlpha(x, y, 0);
+        return img;
+    }
+
+    private static bool IsBackground(Pixels img, int x, int y)
+    {
+        var (b, g, r) = img.Rgb(x, y);
+        var grey = Math.Max(r, Math.Max(g, b)) - Math.Min(r, Math.Min(g, b)) <= 32;
+        return grey && b >= r - 6;
+    }
+
+    /// <summary>
+    /// Cuts out each icon: the visible pieces big enough to be one, biggest first.
+    /// Labels and stray shadow specks are too small; every icon is one piece (cover, pages and ribbon touch).
+    /// </summary>
+    private static List<Pixels> Icons(Pixels img)
+    {
+        var label = new int[img.Width * img.Height];
+        var boxes = new List<(int Left, int Top, int Right, int Bottom)>();
+        for (var start = 0; start < label.Length; start++)
+        {
+            if (label[start] != 0 || img.Alpha(start % img.Width, start / img.Width) == 0) continue;
+
+            var id = boxes.Count + 1;
+            var box = (Left: int.MaxValue, Top: int.MaxValue, Right: 0, Bottom: 0);
+            var stack = new Stack<int>();
+            stack.Push(start);
+            label[start] = id;
+            while (stack.Count > 0)
+            {
+                var at = stack.Pop();
+                int x = at % img.Width, y = at / img.Width;
+                box = (Math.Min(box.Left, x), Math.Min(box.Top, y), Math.Max(box.Right, x), Math.Max(box.Bottom, y));
+                foreach (var (nx, ny) in new[] { (x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1) })
+                {
+                    if (nx < 0 || ny < 0 || nx >= img.Width || ny >= img.Height) continue;
+                    var next = ny * img.Width + nx;
+                    if (label[next] != 0 || img.Alpha(nx, ny) == 0) continue;
+                    label[next] = id;
+                    stack.Push(next);
+                }
+            }
+            boxes.Add(box);
+        }
+
+        var icons = boxes
+            .Where(b => b.Right - b.Left >= MinIconSide && b.Bottom - b.Top >= MinIconSide)
+            .OrderByDescending(b => (b.Right - b.Left) * (b.Bottom - b.Top))
+            .Select(b => img.Sub(b.Left, b.Top, b.Right - b.Left + 1, b.Bottom - b.Top + 1))
+            .ToList();
+        if (icons.Count != Sizes.Length)
+            throw new InvalidOperationException($"Expected {Sizes.Length} icons on the sheet, found {icons.Count}.");
+        return icons;
     }
 
     private static BitmapSource Square(Pixels img)
@@ -178,7 +224,8 @@ internal static class Program
             return (data[i], data[i + 1], data[i + 2]);
         }
 
-        public byte Alpha(int x, int y) => data[(y * Width + x) * 4 + 3];
+        public byte Alpha(int x, int y) =>
+            x < 0 || y < 0 || x >= Width || y >= Height ? (byte)0 : data[(y * Width + x) * 4 + 3];
 
         public void SetAlpha(int x, int y, byte alpha) => data[(y * Width + x) * 4 + 3] = alpha;
 

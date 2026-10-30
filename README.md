@@ -76,7 +76,7 @@ The standup itself (who has spoken, timings, "away today") lives in memory only 
 ```
 Daybook/
 ├── design/
-│   ├── daybook.ico        App icon (16, 32, 48, 256 px)
+│   ├── daybook.ico        App icon (16, 24, 32, 48, 64, 128, 256 px)
 │   └── icon-sheet.png     Designer's icon sheet, source for the .ico
 ├── src/Daybook.App/       WPF app (MVVM with CommunityToolkit.Mvvm)
 │   ├── Models/            Team, Teammate, DayTask, TaskList, WorkDays
@@ -98,7 +98,7 @@ ffmpeg -i new-sheet.webp -pix_fmt rgba design/icon-sheet.png
 dotnet run --project tools/IconGen -- design/icon-sheet.png design/daybook.ico
 ```
 
-The tool crops the large icon in the top part of the sheet, removes its drop shadow, and writes the `.ico`.
+The tool removes the sheet background and shadows, cuts out each icon (the designer drew the small ones separately, so they stay crisp), and writes every size into the `.ico`. It expects the sheet's seven icons: 256, 128, 64, 48, 32, 24 and 16 px.
 
 ## Design principles
 
