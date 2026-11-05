@@ -24,6 +24,24 @@ public partial class TodayViewModel : ObservableObject
         List.Items.CollectionChanged += OnItemsChanged;
         foreach (var task in List.Items) task.PropertyChanged += OnTaskChanged;
         Rebuild();
+        _day = WorkDays.Today;
+    }
+
+    private DateOnly _day;
+
+    /// <summary>
+    /// Call when the user comes back to the window: if the app stayed open past midnight,
+    /// nothing else raises a change, so the banner and date would stay stale.
+    /// </summary>
+    public void RefreshDay()
+    {
+        var today = WorkDays.Today;
+        if (today == _day) return;
+
+        _day = today;
+        BannerDismissed = false; // yesterday's "Later" does not apply to the new day
+        OnPropertyChanged(nameof(DateText));
+        OnPropertyChanged(nameof(ShowBanner));
     }
 
     public TaskList List { get; }

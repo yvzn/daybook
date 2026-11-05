@@ -29,6 +29,9 @@ public partial class MainViewModel : ObservableObject
         _currentPage = Today;
     }
 
+    /// <summary>Window got focus: pick up a new day if the app stayed open overnight.</summary>
+    public void OnWindowActivated() => Today.RefreshDay();
+
     [RelayCommand]
     private void ShowToday() => CurrentPage = Today;
 
