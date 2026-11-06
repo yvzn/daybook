@@ -8,17 +8,19 @@ public partial class App : Application
 {
     private readonly TeamStore _teamStore = new();
     private readonly TaskStore _taskStore = new();
+    private readonly RetroStore _retroStore = new();
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        new MainWindow { DataContext = new MainViewModel(_teamStore.Load(), _taskStore.Load()) }.Show();
+        new MainWindow { DataContext = new MainViewModel(_teamStore.Load(), _taskStore.Load(), _retroStore.Load()) }.Show();
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
         _teamStore.Flush();
         _taskStore.Flush();
+        _retroStore.Flush();
         base.OnExit(e);
     }
 }

@@ -4,10 +4,11 @@
 
 A small Windows desktop companion for the work day: one place to see what's on your plate today.
 
-Two tabs:
+Three tabs:
 
 - **Today**: your tasks for the day (doing, planned, done), with a short morning check-up.
 - **Standup**: who has spoken, who is next, how long each person talked, and your own standup notes.
+- **Retro**: subjects to bring up at the next retro, noted as they happen.
 
 ## Features
 
@@ -32,6 +33,12 @@ Two tabs:
 - Right-click someone done to let them **talk again**.
 - **My standup notes** lists your 📣 tasks: done yesterday, and doing or planned today.
 - Order is shuffled by default. Every action can be undone from the toast at the bottom; there are no confirmation dialogs.
+
+**Retro**
+- Three columns: **Went well**, **Didn't go well**, **Ideas**. Type in the column it belongs to and press **Enter**.
+- Each subject shows the day it was noted. Click to rename, hover and click **✕** to delete (with undo).
+- During the retro, tick a subject once it's discussed. **Clear N discussed** removes those and keeps the rest for
+  next time (with undo).
 
 **Edit team**
 - Type a name and press **Enter** to add it. Paste a multi-line list to add several at once.

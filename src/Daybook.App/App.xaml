@@ -37,6 +37,9 @@
         <sys:String x:Key="Icon.Sun">&#xE706;</sys:String>
         <sys:String x:Key="Icon.Gripper">&#xE784;</sys:String>
         <sys:String x:Key="Icon.Megaphone">&#xE789;</sys:String>
+        <sys:String x:Key="Icon.Like">&#xE8E1;</sys:String>
+        <sys:String x:Key="Icon.Dislike">&#xE8E0;</sys:String>
+        <sys:String x:Key="Icon.Lightbulb">&#xE82F;</sys:String>
 
         <!-- Icon before a label, e.g. [cog] Edit team -->
         <Style x:Key="IconGlyph" TargetType="TextBlock">
@@ -60,6 +63,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:TodayViewModel}">
             <views:TodayView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RetroViewModel}">
+            <views:RetroView />
         </DataTemplate>
 
         <Style x:Key="PageTitle" TargetType="TextBlock">
