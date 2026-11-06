@@ -18,6 +18,8 @@
                         Command="{Binding ShowStandupCommand}" Tag="{Binding IsStandupTab}" />
                 <Button Content="Retro" Style="{StaticResource TabButton}"
                         Command="{Binding ShowRetroCommand}" Tag="{Binding IsRetroTab}" />
+                <Button Content="1:1" Style="{StaticResource TabButton}"
+                        Command="{Binding ShowOneOnOneCommand}" Tag="{Binding IsOneOnOneTab}" />
             </StackPanel>
         </Border>
 

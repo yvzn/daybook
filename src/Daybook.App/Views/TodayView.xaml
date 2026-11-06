@@ -37,13 +37,14 @@
             </Setter>
         </Style>
 
-        <!-- One task: [checkbox] title [start/stop] [standup pill] [delete]. Pill before delete so it lines up across sections -->
+        <!-- One task: [checkbox] title [→ 1:1] [start/stop] [standup pill] [delete]. Pill before delete so it lines up across sections -->
         <DataTemplate x:Key="TaskRow">
             <Border x:Name="Row" Background="Transparent" CornerRadius="6" Padding="4,1">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
@@ -66,10 +67,15 @@
                         </TextBox.Style>
                     </TextBox>
 
-                    <ToggleButton Grid.Column="3" IsChecked="{Binding IsShared}" Style="{StaticResource ShareToggle}"
+                    <!-- Hover only, like delete: worth telling the manager -->
+                    <Button x:Name="SendButton" Grid.Column="2" Content="→ 1:1" ToolTip="Note it for the next 1:1"
+                            Opacity="0" Style="{StaticResource LinkButton}" FontSize="13" Margin="8,0,0,0"
+                            Click="SendToOneOnOne_Click" />
+
+                    <ToggleButton Grid.Column="4" IsChecked="{Binding IsShared}" Style="{StaticResource ShareToggle}"
                                   Margin="16,0,4,0" />
 
-                    <Button Grid.Column="2" Style="{StaticResource LinkButton}" MinWidth="72"
+                    <Button Grid.Column="3" Style="{StaticResource LinkButton}" MinWidth="72"
                             Visibility="{Binding IsPlanned, Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding DataContext.StartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                             CommandParameter="{Binding}">
@@ -78,7 +84,7 @@
                             <TextBlock Text="Start" />
                         </StackPanel>
                     </Button>
-                    <Button Grid.Column="2" Style="{StaticResource LinkButton}" MinWidth="72"
+                    <Button Grid.Column="3" Style="{StaticResource LinkButton}" MinWidth="72"
                             Foreground="{StaticResource TextSecondaryBrush}"
                             Visibility="{Binding IsDoing, Converter={StaticResource BoolToVisibility}}"
                             Command="{Binding DataContext.StopCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -89,7 +95,7 @@
                         </StackPanel>
                     </Button>
 
-                    <Button x:Name="DeleteButton" Grid.Column="4" ToolTip="Delete" Opacity="0"
+                    <Button x:Name="DeleteButton" Grid.Column="5" ToolTip="Delete" Opacity="0"
                             Style="{StaticResource LinkButton}" Foreground="{StaticResource TextSecondaryBrush}"
                             Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                             CommandParameter="{Binding}">
@@ -101,6 +107,7 @@
                 <Trigger SourceName="Row" Property="IsMouseOver" Value="True">
                     <Setter TargetName="Row" Property="Background" Value="{StaticResource SurfaceTertiaryBrush}" />
                     <Setter TargetName="DeleteButton" Property="Opacity" Value="1" />
+                    <Setter TargetName="SendButton" Property="Opacity" Value="1" />
                 </Trigger>
             </DataTemplate.Triggers>
         </DataTemplate>

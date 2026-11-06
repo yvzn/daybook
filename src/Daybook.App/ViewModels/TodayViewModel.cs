@@ -16,10 +16,12 @@ public partial class TodayViewModel : ObservableObject
     private const int FocusLimit = 3;
 
     private readonly ToastViewModel _toast;
+    private readonly OneOnOneBook _oneOnOne;
 
-    public TodayViewModel(TaskList list, ToastViewModel toast)
+    public TodayViewModel(TaskList list, OneOnOneBook oneOnOne, ToastViewModel toast)
     {
         List = list;
+        _oneOnOne = oneOnOne;
         _toast = toast;
         List.Items.CollectionChanged += OnItemsChanged;
         foreach (var task in List.Items) task.PropertyChanged += OnTaskChanged;
@@ -100,6 +102,32 @@ public partial class TodayViewModel : ObservableObject
 
         List.Items.RemoveAt(index);
         _toast.Show($"\"{task.Title}\" deleted", () => List.Items.Insert(Math.Min(index, List.Items.Count), task));
+    }
+
+    /// <summary>"→ 1:1" menu: this semester's objectives, "Outside objectives", then issues and asks.</summary>
+    public IReadOnlyList<Objective> OneOnOneObjectives => _oneOnOne.Current.Objectives;
+
+    public Objective OneOnOneOther => _oneOnOne.Current.Other;
+
+    /// <summary>
+    /// Progress happens while working, not the evening before the 1:1: copy the task's title there, dated today.
+    /// The task itself stays as it is.
+    /// </summary>
+    /// <param name="task">Task whose title is copied.</param>
+    /// <param name="objective">Where it goes; null for "Issues & asks".</param>
+    public void SendToOneOnOne(DayTask task, Objective? objective)
+    {
+        if (objective is null)
+        {
+            var issue = new Issue(task.Title, WorkDays.Today);
+            _oneOnOne.Issues.Add(issue);
+            _toast.Show("Sent to issues & asks", () => _oneOnOne.Issues.Remove(issue));
+            return;
+        }
+
+        var subject = new OneOnOneSubject(task.Title, WorkDays.Today);
+        objective.Subjects.Add(subject);
+        _toast.Show($"Sent to {objective.Title}", () => objective.Subjects.Remove(subject));
     }
 
     [RelayCommand]

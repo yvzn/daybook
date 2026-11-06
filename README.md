@@ -4,11 +4,12 @@
 
 A small Windows desktop companion for the work day: one place to see what's on your plate today.
 
-Three tabs:
+Four tabs:
 
 - **Today**: your tasks for the day (doing, planned, done), with a short morning check-up.
 - **Standup**: who has spoken, who is next, how long each person talked, and your own standup notes.
 - **Retro**: subjects to bring up at the next retro, noted as they happen.
+- **1:1**: progress on your objectives, plus issues and asks, for your next 1:1; progress is kept for the semester review.
 
 ## Features
 
@@ -39,6 +40,21 @@ Three tabs:
 - Each subject shows the day it was noted. Click to rename, hover and click **✕** to delete (with undo).
 - During the retro, tick a subject once it's discussed. **Clear N discussed** removes those and keeps the rest for
   next time (with undo).
+
+**1:1**
+- In meeting order: **My objectives** for the semester, each with the subjects to share about it, then **Issues &
+  asks**. Click **+ Add subject** under an objective (or **+ Add issue or ask**), type and press **Enter**.
+- A win that fits no objective goes under **Outside objectives**, always last: it is kept for the review like the rest.
+- On **Today**, hover a task and click **→ 1:1** to send it to an objective, **Outside objectives** or **Issues & asks** (the task stays as it is).
+- During the meeting, tick what you covered. **Done with 1:1** moves ticked subjects to **Shared earlier**, removes
+  ticked issues, and keeps the rest for next time (with undo). An issue still open after a 1:1 shows **Raised N×**.
+- An objective you haven't talked about in 3 or more 1:1s shows **Not mentioned in last N 1:1s**.
+- **Shared earlier** is the semester review: everything shared, grouped by objective, all editable. Click a date to
+  change it, add an outcome (what your manager said), add a forgotten win, or send a subject back with
+  **Not discussed**. **Copy** puts it all on the clipboard as plain text.
+- A semester has no fixed dates: you start the next one with **Start new semester** after your review. Objectives
+  carry over (edit them with **Edit**), and past semesters stay readable from **Shared earlier**. From mid-June and
+  mid-December, a hint reminds you the review is coming.
 
 **Edit team**
 - Type a name and press **Enter** to add it. Paste a multi-line list to add several at once.
