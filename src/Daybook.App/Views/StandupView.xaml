@@ -231,7 +231,8 @@
             <Button DockPanel.Dock="Right" Content="Shuffle" Command="{Binding ShuffleCommand}"
                     Style="{StaticResource LinkButton}" VerticalAlignment="Center" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Command="{Binding NextCommand}" Style="{StaticResource PrimaryButton}" MinWidth="160">
+                <Button Command="{Binding NextCommand}" Style="{StaticResource PrimaryButton}" MinWidth="160"
+                        ToolTip="{StaticResource Hint.SpaceForNext}" ToolTipService.ShowOnDisabled="True">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Next" />
                         <TextBlock Style="{StaticResource IconGlyph}" Text="{StaticResource Icon.Play}" Margin="8,2,0,0" />

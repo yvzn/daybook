@@ -30,7 +30,7 @@
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,18,0,10">
             <TextBlock Text="Semester" FontSize="15" VerticalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}" />
             <TextBox Text="{Binding Semester.Label, UpdateSourceTrigger=Explicit}" Style="{StaticResource InlineEdit}"
-                     FontSize="15" MinWidth="80" Margin="10,0,0,0" ToolTip="Click to rename"
+                     FontSize="15" MinWidth="80" Margin="10,0,0,0" ToolTip="Click to rename · Press Enter ↵ to save"
                      KeyDown="Text_KeyDown" LostKeyboardFocus="Text_LostKeyboardFocus" />
         </StackPanel>
 
@@ -81,7 +81,8 @@
                     Style="{StaticResource PrimaryButton}" Padding="18,8" Margin="8,0,0,0" />
             <Grid>
                 <TextBox x:Name="AddBox" Text="{Binding NewTitle, UpdateSourceTrigger=PropertyChanged}"
-                         FontSize="16" Padding="8,7" VerticalContentAlignment="Center">
+                         FontSize="16" Padding="8,7" VerticalContentAlignment="Center"
+                         ToolTip="{StaticResource Hint.EnterToAdd}">
                     <TextBox.InputBindings>
                         <KeyBinding Key="Enter" Command="{Binding AddCommand}" />
                     </TextBox.InputBindings>

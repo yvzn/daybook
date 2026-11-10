@@ -83,7 +83,8 @@
                 <!-- Add box: Enter adds to this column -->
                 <Grid Margin="0,0,0,6">
                     <TextBox x:Name="AddBox" Text="{Binding NewText, UpdateSourceTrigger=PropertyChanged}"
-                             FontSize="14" Padding="6,5" VerticalContentAlignment="Center">
+                             FontSize="14" Padding="6,5" VerticalContentAlignment="Center"
+                             ToolTip="{StaticResource Hint.EnterToAdd}">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Enter" Command="{Binding AddCommand}" />
                         </TextBox.InputBindings>

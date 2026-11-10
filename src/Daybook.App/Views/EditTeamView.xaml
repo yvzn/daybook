@@ -97,7 +97,8 @@
                     Style="{StaticResource PrimaryButton}" Padding="18,8" Margin="8,0,0,0" />
             <Grid>
                 <TextBox x:Name="AddBox" Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}"
-                         FontSize="16" Padding="8,7" VerticalContentAlignment="Center">
+                         FontSize="16" Padding="8,7" VerticalContentAlignment="Center"
+                         ToolTip="{StaticResource Hint.EnterToAdd}">
                     <TextBox.InputBindings>
                         <KeyBinding Key="Enter" Command="{Binding AddCommand}" />
                     </TextBox.InputBindings>

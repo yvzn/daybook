@@ -43,6 +43,11 @@
         <sys:String x:Key="Icon.Flag">&#xE7C1;</sys:String>
         <sys:String x:Key="Icon.Important">&#xE8C9;</sys:String>
 
+        <!-- Keyboard hints, shown as tooltips -->
+        <sys:String x:Key="Hint.EnterToSave">Press Enter ↵ to save</sys:String>
+        <sys:String x:Key="Hint.EnterToAdd">Press Enter ↵ to add</sys:String>
+        <sys:String x:Key="Hint.SpaceForNext">Press Space to move to next person</sys:String>
+
         <!-- Icon before a label, e.g. [cog] Edit team -->
         <Style x:Key="IconGlyph" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
@@ -211,6 +216,7 @@
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="Padding" Value="2,4" />
             <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="ToolTip" Value="{StaticResource Hint.EnterToSave}" />
             <Style.Triggers>
                 <Trigger Property="IsKeyboardFocused" Value="True">
                     <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
@@ -239,6 +245,7 @@
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="Padding" Value="2,3" />
             <Setter Property="Cursor" Value="IBeam" />
+            <Setter Property="ToolTip" Value="{StaticResource Hint.EnterToSave}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">

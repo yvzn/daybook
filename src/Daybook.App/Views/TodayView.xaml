@@ -152,7 +152,8 @@
                 <!-- Add box: always there, focused, Enter adds to Planned -->
                 <Grid>
                     <TextBox x:Name="AddBox" Text="{Binding NewTitle, UpdateSourceTrigger=PropertyChanged}"
-                             FontSize="16" Padding="8,7" VerticalContentAlignment="Center">
+                             FontSize="16" Padding="8,7" VerticalContentAlignment="Center"
+                             ToolTip="{StaticResource Hint.EnterToAdd}">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Enter" Command="{Binding AddCommand}" />
                         </TextBox.InputBindings>

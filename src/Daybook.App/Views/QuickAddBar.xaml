@@ -94,7 +94,8 @@
         <!-- Same plain box as Today and Retro -->
         <Grid Grid.Column="1">
             <TextBox x:Name="Box" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
-                     FontSize="14" Padding="6,6" VerticalContentAlignment="Center">
+                     FontSize="14" Padding="6,6" VerticalContentAlignment="Center"
+                     ToolTip="{StaticResource Hint.EnterToAdd}">
                 <TextBox.InputBindings>
                     <KeyBinding Key="Enter" Command="{Binding AddCommand}" />
                 </TextBox.InputBindings>
