@@ -21,6 +21,10 @@ public partial class ToastViewModel : ObservableObject
     [ObservableProperty]
     private bool _canUndo;
 
+    /// <summary>Goes up on every Show, even one replacing a toast still visible: the view replays its entrance on it.</summary>
+    [ObservableProperty]
+    private int _showCount;
+
     public ToastViewModel() => _timer.Tick += (_, _) => Hide();
 
     public void Show(string message, Action? undo = null)
@@ -29,6 +33,7 @@ public partial class ToastViewModel : ObservableObject
         _undo = undo;
         CanUndo = undo is not null;
         IsVisible = true;
+        ShowCount++;
         _timer.Stop();
         _timer.Start();
     }

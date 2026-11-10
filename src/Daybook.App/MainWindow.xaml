@@ -9,33 +9,73 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Tabs: where am I, where can I go -->
-        <Border BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1" Padding="24,6,24,0">
-            <StackPanel Orientation="Horizontal">
-                <Button Content="Today" Style="{StaticResource TabButton}"
-                        Command="{Binding ShowTodayCommand}" Tag="{Binding IsTodayTab}" />
-                <Button Content="Standup" Style="{StaticResource TabButton}"
-                        Command="{Binding ShowStandupCommand}" Tag="{Binding IsStandupTab}" />
-                <Button Content="Retro" Style="{StaticResource TabButton}"
-                        Command="{Binding ShowRetroCommand}" Tag="{Binding IsRetroTab}" />
-                <Button Content="1:1" Style="{StaticResource TabButton}"
-                        Command="{Binding ShowOneOnOneCommand}" Tag="{Binding IsOneOnOneTab}" />
-            </StackPanel>
+        <!-- Tabs: where am I, where can I go. The toast lives in the free space on their right -->
+        <Border BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1" Padding="24,6,12,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Today" Style="{StaticResource TabButton}"
+                            Command="{Binding ShowTodayCommand}" Tag="{Binding IsTodayTab}" />
+                    <Button Content="Standup" Style="{StaticResource TabButton}"
+                            Command="{Binding ShowStandupCommand}" Tag="{Binding IsStandupTab}" />
+                    <Button Content="Retro" Style="{StaticResource TabButton}"
+                            Command="{Binding ShowRetroCommand}" Tag="{Binding IsRetroTab}" />
+                    <Button Content="1:1" Style="{StaticResource TabButton}"
+                            Command="{Binding ShowOneOnOneCommand}" Tag="{Binding IsOneOnOneTab}" />
+                </StackPanel>
+
+                <!-- Toast: "Bob removed · Undo". Never over the page: no content of any page is hidden by it.
+                     Far from where you clicked, so it slides in and gives a small nudge to catch the eye. -->
+                <Border x:Name="Toast" Grid.Column="1" DataContext="{Binding Toast}"
+                        Visibility="{Binding IsVisible, Converter={StaticResource BoolToVisibility}}"
+                        Tag="{Binding ShowCount, NotifyOnTargetUpdated=True}"
+                        Background="{StaticResource TextPrimaryBrush}" CornerRadius="8" Padding="12,5"
+                        HorizontalAlignment="Right" VerticalAlignment="Center" Margin="12,0,0,3"
+                        RenderTransformOrigin="1,0.5">
+                    <Border.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform />
+                            <TranslateTransform />
+                        </TransformGroup>
+                    </Border.RenderTransform>
+                    <Border.Triggers>
+                        <EventTrigger RoutedEvent="Binding.TargetUpdated">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <!-- Slide in from the right and fade in -->
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.2" />
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.Children[1].X"
+                                                     From="40" To="0" Duration="0:0:0.25">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut" />
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                    <!-- Then one short pulse -->
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.Children[0].ScaleX"
+                                                     BeginTime="0:0:0.3" From="1" To="1.06" Duration="0:0:0.12" AutoReverse="True" />
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.Children[0].ScaleY"
+                                                     BeginTime="0:0:0.3" From="1" To="1.06" Duration="0:0:0.12" AutoReverse="True" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Border.Triggers>
+                    <!-- Narrow window: the message shortens, Undo always stays -->
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Undo" Command="{Binding UndoCommand}" Style="{StaticResource LinkButton}"
+                                Foreground="#93C5FD" FontWeight="SemiBold" FontSize="13" Padding="6,2" Margin="10,0,0,0"
+                                Focusable="False"
+                                Visibility="{Binding CanUndo, Converter={StaticResource BoolToVisibility}}" />
+                        <TextBlock Text="{Binding Message}" Foreground="White" FontSize="13" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" ToolTip="{Binding Message}" />
+                    </DockPanel>
+                </Border>
+            </Grid>
         </Border>
 
         <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" Focusable="False" />
-
-        <!-- Toast: "Bob removed · Undo" -->
-        <Border Grid.Row="1" DataContext="{Binding Toast}"
-                Visibility="{Binding IsVisible, Converter={StaticResource BoolToVisibility}}"
-                Background="{StaticResource TextPrimaryBrush}" CornerRadius="8" Padding="16,10"
-                HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,84">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="{Binding Message}" Foreground="White" FontSize="14" VerticalAlignment="Center" />
-                <Button Content="Undo" Command="{Binding UndoCommand}" Style="{StaticResource LinkButton}"
-                        Foreground="#93C5FD" FontWeight="SemiBold" Margin="16,0,0,0" Focusable="False"
-                        Visibility="{Binding CanUndo, Converter={StaticResource BoolToVisibility}}" />
-            </StackPanel>
-        </Border>
     </Grid>
 </Window>
