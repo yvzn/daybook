@@ -220,7 +220,10 @@
                     <DockPanel Margin="0,24,0,4">
                         <Button DockPanel.Dock="Right" Content="Edit" Command="{Binding EditObjectivesCommand}"
                                 Style="{StaticResource LinkButton}" VerticalAlignment="Center" />
-                        <TextBlock Style="{StaticResource SectionHeader}" Margin="24,0,0,0">
+                        <!-- Always open: a faded chevron only to line up with Issues & asks -->
+                        <TextBlock DockPanel.Dock="Left" Style="{StaticResource Chevron}" Text="&#xE70D;" Opacity="0.4"
+                                   Margin="2,0,0,0" VerticalAlignment="Center" />
+                        <TextBlock Style="{StaticResource SectionHeader}">
                             <Run Text="{StaticResource Icon.Flag}" FontFamily="{StaticResource IconFont}" FontSize="15"
                                  Foreground="{StaticResource AccentBrush}" />
                             <Run Text=" My objectives" />
