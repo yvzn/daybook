@@ -5,7 +5,7 @@ using Daybook.App.Models;
 namespace Daybook.App.ViewModels;
 
 /// <summary>
-/// Navigation: Today | Standup | Retro | 1:1 tabs. Edit team is a page under Standup; Shared earlier and
+/// Navigation: Today | Standup | Retro | 1:1 tabs. Edit team is a page under Standup; Semester review and
 /// Objectives are pages under 1:1.
 /// </summary>
 public partial class MainViewModel : ObservableObject
@@ -38,7 +38,7 @@ public partial class MainViewModel : ObservableObject
         Standup = new StandupViewModel(team, Notes, Toast, () => CurrentPage = EditTeam!);
         EditTeam = new EditTeamViewModel(team, Toast, ShowStandup);
         Retro = new RetroViewModel(retro, Toast);
-        OneOnOne = new OneOnOneViewModel(oneOnOne, Toast, () => OpenSharedEarlier(oneOnOne.Current), ShowEditObjectives);
+        OneOnOne = new OneOnOneViewModel(oneOnOne, Toast, () => OpenSemesterReview(oneOnOne.Current), ShowEditObjectives);
         EditObjectives = new EditObjectivesViewModel(oneOnOne, Toast, ShowOneOnOne);
         _currentPage = Today;
     }
@@ -65,12 +65,12 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>The current semester (back to 1:1), or a past one (back to the current semester).</summary>
-    private void OpenSharedEarlier(Semester semester)
+    private void OpenSemesterReview(Semester semester)
     {
         var isCurrent = semester == _oneOnOneBook.Current;
         CurrentPage = new SharedEarlierViewModel(_oneOnOneBook, semester, Toast,
-            back: isCurrent ? ShowOneOnOne : () => OpenSharedEarlier(_oneOnOneBook.Current),
-            openSemester: OpenSharedEarlier,
+            back: isCurrent ? ShowOneOnOne : () => OpenSemesterReview(_oneOnOneBook.Current),
+            openSemester: OpenSemesterReview,
             semesterStarted: ShowOneOnOne);
     }
 

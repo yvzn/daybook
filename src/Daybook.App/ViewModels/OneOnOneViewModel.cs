@@ -8,29 +8,37 @@ using Daybook.App.Models;
 namespace Daybook.App.ViewModels;
 
 /// <summary>
-/// Next 1:1, in meeting order: progress on each objective, then issues and asks. Only what is still to share
-/// shows here; shared subjects live in "Shared earlier".
+/// Next 1:1, in two modes, like Standup:
+/// Prep: everything, editable, grouped and collapsible, one add box at the bottom. "Start 1:1" goes to the call.
+/// Call: read-only and big for screen share; issues first, then only objectives with something to share; tick
+/// what was covered. "Done with 1:1" closes the meeting and goes back to prep.
+/// Only what is still to share shows here; shared subjects live in "Semester review".
 /// </summary>
 public partial class OneOnOneViewModel : ObservableObject
 {
     private const int QuietAfterMeetings = 3;
 
     private readonly ToastViewModel _toast;
-    private readonly Action _showSharedEarlier;
+    private readonly Action _showSemesterReview;
     private readonly Action _editObjectives;
     private Semester? _semester;
 
-    public OneOnOneViewModel(OneOnOneBook book, ToastViewModel toast, Action showSharedEarlier, Action editObjectives)
+    public OneOnOneViewModel(OneOnOneBook book, ToastViewModel toast, Action showSemesterReview, Action editObjectives)
     {
         Book = book;
         _toast = toast;
-        _showSharedEarlier = showSharedEarlier;
+        _showSemesterReview = showSemesterReview;
         _editObjectives = editObjectives;
+
+        PrepAdd = new QuickAddViewModel(() => Book.Current.AllGroups, AddSubject, AddIssue);
+        CallAdd = new QuickAddViewModel(() => [], addSubject: null, AddIssue);
+
         Book.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(OneOnOneBook.Current)) Refresh();
+            if (e.PropertyName == nameof(OneOnOneBook.IsInCall)) OnPropertyChanged(nameof(IsInCall));
         };
-        Book.Issues.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasIssues));
+        Book.Issues.CollectionChanged += OnIssuesChanged;
         Refresh();
     }
 
@@ -38,16 +46,32 @@ public partial class OneOnOneViewModel : ObservableObject
 
     public ObservableCollection<ObjectiveRowViewModel> Objectives { get; } = [];
 
+    /// <summary>Add box in prep: an objective, or issues.</summary>
+    public QuickAddViewModel PrepAdd { get; }
+
+    /// <summary>Add box during the call: a new issue only, the rest waits for prep.</summary>
+    public QuickAddViewModel CallAdd { get; }
+
+    public bool IsInCall => Book.IsInCall;
+
     public string SemesterLabel => $"· {Book.Current.Label}";
 
     public bool HasObjectives => Book.Current.Objectives.Count > 0;
 
+    public int IssueCount => Book.Issues.Count;
+
     public bool HasIssues => Book.Issues.Count > 0;
 
-    public bool ShowReviewNudge => Book.IsReviewSeason;
+    /// <summary>Call view: an objective with something to share.</summary>
+    public bool HasPendingSubjects => Objectives.Any(o => o.HasPending);
+
+    /// <summary>Call view: nothing at all to go through.</summary>
+    public bool IsCallEmpty => !HasIssues && !HasPendingSubjects;
 
     [ObservableProperty]
-    private string _newIssue = "";
+    private bool _isIssuesExpanded;
+
+    public bool ShowReviewNudge => Book.IsReviewSeason;
 
     /// <summary>Rebuild rows: the semester, its objectives or the meeting count may have changed.</summary>
     public void Refresh()
@@ -60,10 +84,19 @@ public partial class OneOnOneViewModel : ObservableObject
         Objectives.Clear();
         foreach (var objective in Book.Current.AllGroups)
             Objectives.Add(new ObjectiveRowViewModel(this, objective, isOther: objective == Book.Current.Other));
+        IsIssuesExpanded = HasIssues;
+        PrepAdd.Sync();
 
         OnPropertyChanged(nameof(SemesterLabel));
         OnPropertyChanged(nameof(HasObjectives));
         OnPropertyChanged(nameof(ShowReviewNudge));
+        OnRowChanged();
+    }
+
+    internal void OnRowChanged()
+    {
+        OnPropertyChanged(nameof(HasPendingSubjects));
+        OnPropertyChanged(nameof(IsCallEmpty));
     }
 
     internal string? QuietHint(Objective objective)
@@ -74,14 +107,24 @@ public partial class OneOnOneViewModel : ObservableObject
         return count >= QuietAfterMeetings ? $"Not mentioned in last {count} 1:1s" : null;
     }
 
-    [RelayCommand]
-    private void AddIssue()
-    {
-        var text = NewIssue.Trim();
-        if (text.Length == 0) return;
+    private void AddSubject(Objective objective, string text) =>
+        objective.Subjects.Add(new OneOnOneSubject(text, WorkDays.Today));
 
-        Book.Issues.Add(new Issue(text, WorkDays.Today));
-        NewIssue = "";
+    private void AddIssue(string text) => Book.Issues.Add(new Issue(text, WorkDays.Today));
+
+    private void OnIssuesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        // Just added: open the group, so you see where it went.
+        if (e.Action == NotifyCollectionChangedAction.Add) IsIssuesExpanded = true;
+        OnPropertyChanged(nameof(IssueCount));
+        OnPropertyChanged(nameof(HasIssues));
+        OnPropertyChanged(nameof(IsCallEmpty));
+    }
+
+    [RelayCommand]
+    private void ToggleIssues()
+    {
+        if (HasIssues) IsIssuesExpanded = !IsIssuesExpanded;
     }
 
     [RelayCommand]
@@ -106,8 +149,16 @@ public partial class OneOnOneViewModel : ObservableObject
         _toast.Show($"\"{issue.Text}\" deleted", () => Book.Issues.Insert(Math.Min(index, Book.Issues.Count), issue));
     }
 
+    [RelayCommand]
+    private void StartCall() => Book.IsInCall = true;
+
+    /// <summary>Meeting cancelled or moved: back to prep, ticks kept, nothing recorded.</summary>
+    [RelayCommand]
+    private void BackToPrep() => Book.IsInCall = false;
+
     /// <summary>
     /// After the meeting: ticked subjects become "shared on today", ticked issues go, open issues count one more 1:1.
+    /// Back to prep.
     /// </summary>
     [RelayCommand]
     private void Done()
@@ -132,6 +183,7 @@ public partial class OneOnOneViewModel : ObservableObject
             foreach (var issue in open) issue.TimesRaised++;
             Book.Meetings.Add(today);
         }
+        Book.IsInCall = false;
         Refresh();
 
         var parts = new List<string> { "1:1 done" };
@@ -152,12 +204,13 @@ public partial class OneOnOneViewModel : ObservableObject
                 foreach (var issue in open) issue.TimesRaised--;
                 Book.Meetings.RemoveAt(Book.Meetings.Count - 1);
             }
+            Book.IsInCall = true;
             Refresh();
         });
     }
 
     [RelayCommand]
-    private void ShowSharedEarlier() => _showSharedEarlier();
+    private void ShowSemesterReview() => _showSemesterReview();
 
     [RelayCommand]
     private void EditObjectives() => _editObjectives();
@@ -165,7 +218,7 @@ public partial class OneOnOneViewModel : ObservableObject
     private void OnObjectivesChanged(object? sender, NotifyCollectionChangedEventArgs e) => Refresh();
 }
 
-/// <summary>One objective on the 1:1 page: what is still to share, its own add box, a hint when it went quiet.</summary>
+/// <summary>One objective on the 1:1 page: what is still to share, open or folded, a hint when it went quiet.</summary>
 public partial class ObjectiveRowViewModel : ObservableObject
 {
     private readonly OneOnOneViewModel _owner;
@@ -178,6 +231,7 @@ public partial class ObjectiveRowViewModel : ObservableObject
         Objective.Subjects.CollectionChanged += OnSubjectsChanged;
         foreach (var subject in Objective.Subjects) subject.PropertyChanged += OnSubjectChanged;
         Fill();
+        IsExpanded = HasPending;
     }
 
     public Objective Objective { get; }
@@ -187,21 +241,23 @@ public partial class ObjectiveRowViewModel : ObservableObject
 
     public ObservableCollection<OneOnOneSubject> Pending { get; } = [];
 
+    public int Count => Pending.Count;
+
+    /// <summary>Something to share. In the call, the others are hidden.</summary>
+    public bool HasPending => Pending.Count > 0;
+
+    /// <summary>Prep: subjects showing. Opens by itself when it has some, or gets a new one.</summary>
+    [ObservableProperty]
+    private bool _isExpanded;
+
     public string? QuietHint => _owner.QuietHint(Objective);
 
     public bool IsQuiet => QuietHint is not null;
 
-    [ObservableProperty]
-    private string _newText = "";
-
     [RelayCommand]
-    private void Add()
+    private void Toggle()
     {
-        var text = NewText.Trim();
-        if (text.Length == 0) return;
-
-        Objective.Subjects.Add(new OneOnOneSubject(text, WorkDays.Today));
-        NewText = "";
+        if (HasPending) IsExpanded = !IsExpanded;
     }
 
     internal void Detach()
@@ -215,6 +271,8 @@ public partial class ObjectiveRowViewModel : ObservableObject
         foreach (OneOnOneSubject s in e.OldItems ?? Array.Empty<OneOnOneSubject>()) s.PropertyChanged -= OnSubjectChanged;
         foreach (OneOnOneSubject s in e.NewItems ?? Array.Empty<OneOnOneSubject>()) s.PropertyChanged += OnSubjectChanged;
         Fill();
+        // Just added: open the group, so you see where it went.
+        if (e.Action == NotifyCollectionChangedAction.Add) IsExpanded = true;
     }
 
     private void OnSubjectChanged(object? sender, PropertyChangedEventArgs e)
@@ -230,7 +288,11 @@ public partial class ObjectiveRowViewModel : ObservableObject
             Pending.Clear();
             foreach (var subject in wanted) Pending.Add(subject);
         }
+        if (!HasPending) IsExpanded = false;
+        OnPropertyChanged(nameof(Count));
+        OnPropertyChanged(nameof(HasPending));
         OnPropertyChanged(nameof(QuietHint));
         OnPropertyChanged(nameof(IsQuiet));
+        _owner.OnRowChanged();
     }
 }

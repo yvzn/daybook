@@ -1,0 +1,172 @@
+<UserControl x:Class="Daybook.App.Views.QuickAddBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Daybook.App.ViewModels"
+             xmlns:conv="clr-namespace:Daybook.App.Converters"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:QuickAddViewModel}"
+             x:Name="Root">
+    <UserControl.Resources>
+        <!-- One half of the "where does it go" choice. Tag = chosen -->
+        <Style x:Key="Segment" TargetType="Button">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="5" Padding="10,5" Margin="2">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource SurfaceTertiaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="Tag">
+                                <Trigger.Value>
+                                    <sys:Boolean xmlns:sys="clr-namespace:System;assembly=mscorlib">True</sys:Boolean>
+                                </Trigger.Value>
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentSoftBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- One objective in the picker: full title, check on the current one -->
+        <Style x:Key="PickerItem" TargetType="Button">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="6" Padding="10,7">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource SurfaceTertiaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Where it goes: [⚑ objective ▾ | ! Issue] -->
+        <Border BorderBrush="{StaticResource BorderDefaultBrush}" BorderThickness="1" CornerRadius="7" Margin="0,0,8,0"
+                Visibility="{Binding CanPickObjective, Converter={StaticResource BoolToVisibility}}">
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="ObjectiveButton" Style="{StaticResource Segment}" Tag="{Binding IsObjectiveSelected}"
+                        Click="ObjectiveButton_Click" ToolTip="{Binding Objective.Title}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource IconGlyph}" Text="{StaticResource Icon.Flag}" />
+                        <TextBlock Text="{Binding Objective.Title}" TextTrimming="CharacterEllipsis" MaxWidth="190" />
+                        <TextBlock Style="{StaticResource IconOnly}" Text="&#xE70D;" FontSize="10" Margin="8,2,0,0" />
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource Segment}" Tag="{Binding IsIssue}" Command="{Binding PickIssueCommand}"
+                        Click="IssueButton_Click"
+                        Visibility="{Binding CanPickIssue, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource IconGlyph}" Text="{StaticResource Icon.Important}" />
+                        <TextBlock Text="Issue" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- Same plain box as Today and Retro -->
+        <Grid Grid.Column="1">
+            <TextBox x:Name="Box" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                     FontSize="14" Padding="6,6" VerticalContentAlignment="Center">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Enter" Command="{Binding AddCommand}" />
+                </TextBox.InputBindings>
+            </TextBox>
+            <!-- Placeholder says where it goes: "Add a subject to ⚑ Intégrer des Skills pertinents…" / "… to ! Issues & asks" -->
+            <DockPanel Margin="9,0,8,0" VerticalAlignment="Center" IsHitTestVisible="False"
+                       TextElement.FontSize="14" TextElement.Foreground="{StaticResource TextTertiaryBrush}">
+                <DockPanel.Style>
+                    <Style TargetType="DockPanel">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Text, ElementName=Box}" Value="">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DockPanel.Style>
+                <TextBlock DockPanel.Dock="Left" Text="{Binding Verb}" />
+                <TextBlock DockPanel.Dock="Left" Margin="6,1,5,0" FontSize="13">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource IconOnly}">
+                            <Setter Property="Text" Value="{StaticResource Icon.Flag}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsIssue}" Value="True">
+                                    <Setter Property="Text" Value="{StaticResource Icon.Important}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Text="{Binding TargetLabel}" TextTrimming="CharacterEllipsis" />
+            </DockPanel>
+        </Grid>
+
+        <!-- The bar sits at the bottom of the page: the list opens upwards -->
+        <Popup x:Name="Picker" PlacementTarget="{Binding ElementName=ObjectiveButton}" Placement="Top" VerticalOffset="-4"
+               StaysOpen="False" AllowsTransparency="True">
+            <Border Background="{StaticResource SurfacePrimaryBrush}" BorderBrush="{StaticResource BorderDefaultBrush}"
+                    BorderThickness="1" CornerRadius="8" Padding="4" Margin="0,0,8,8" MaxWidth="520">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.15" />
+                </Border.Effect>
+                <ItemsControl ItemsSource="{Binding Objectives}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Style="{StaticResource PickerItem}" Click="PickerItem_Click"
+                                    Command="{Binding DataContext.PickObjectiveCommand, ElementName=Root}" CommandParameter="{Binding}">
+                                <DockPanel>
+                                    <TextBlock x:Name="Check" DockPanel.Dock="Left" Width="22" Style="{StaticResource IconOnly}"
+                                               Text="{StaticResource Icon.Check}" FontSize="12" Visibility="Hidden"
+                                               Foreground="{StaticResource AccentBrush}" />
+                                    <TextBlock x:Name="Title" Text="{Binding Title}" TextWrapping="Wrap" />
+                                </DockPanel>
+                            </Button>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Value="True">
+                                    <DataTrigger.Binding>
+                                        <MultiBinding Converter="{x:Static conv:SameObjectConverter.Instance}">
+                                            <Binding />
+                                            <Binding Path="DataContext.Objective" ElementName="Root" />
+                                        </MultiBinding>
+                                    </DataTrigger.Binding>
+                                    <Setter TargetName="Check" Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Title}" Value="Outside objectives">
+                                    <Setter TargetName="Title" Property="FontStyle" Value="Italic" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

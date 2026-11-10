@@ -105,6 +105,10 @@ public partial class OneOnOneBook : ObservableObject
 
     public ObservableCollection<Issue> Issues { get; } = [];
 
+    /// <summary>"Start 1:1" was pressed and "Done with 1:1" not yet: the page shows the call view, even after a restart.</summary>
+    [ObservableProperty]
+    private bool _isInCall;
+
     /// <summary>Days a 1:1 was done: drives "Not mentioned in last 3 1:1s".</summary>
     public ObservableCollection<DateOnly> Meetings { get; } = [];
 

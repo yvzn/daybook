@@ -4,39 +4,39 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Daybook.App.ViewModels"
+             xmlns:views="clr-namespace:Daybook.App.Views"
              mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:OneOnOneViewModel}"
              x:Name="Root">
     <UserControl.Resources>
-        <!-- Ticked during the meeting: struck through, still editable -->
-        <Style x:Key="TickableText" TargetType="TextBox" BasedOn="{StaticResource InlineEdit}">
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsTicked}" Value="True">
-                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
-                    <Setter Property="TextDecorations" Value="Strikethrough" />
-                </DataTrigger>
-            </Style.Triggers>
+        <!-- ===== Prep: everything, editable, no ticks ===== -->
+
+        <!-- "Raised 2×": an issue that keeps coming back -->
+        <Style x:Key="RaisedBadge" TargetType="Border">
+            <Setter Property="CornerRadius" Value="9" />
+            <Setter Property="Padding" Value="8,1" />
+            <Setter Property="Margin" Value="12,4,0,0" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Background" Value="#FEF3C7" />
+            <Setter Property="ToolTip" Value="Still open after that many 1:1s" />
+            <Setter Property="Visibility" Value="{Binding WasRaised, Converter={StaticResource BoolToVisibility}}" />
         </Style>
 
-        <!-- One subject: [tick] text  date [✕] -->
-        <DataTemplate x:Key="SubjectRow">
-            <Border x:Name="Row" Background="Transparent" CornerRadius="6" Padding="2,0">
+
+        <!-- One subject: text (click to edit)  date [✕] -->
+        <DataTemplate x:Key="PrepSubjectRow">
+            <Border x:Name="Row" Background="Transparent" CornerRadius="6" Padding="2,0" Margin="22,0,0,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-
-                    <CheckBox IsChecked="{Binding IsTicked}" VerticalAlignment="Top" Margin="2,6,6,0"
-                              Focusable="False" Cursor="Hand" ToolTip="Shared" />
-                    <TextBox Grid.Column="1" Text="{Binding Text, UpdateSourceTrigger=Explicit}" Style="{StaticResource TickableText}"
+                    <TextBox Text="{Binding Text, UpdateSourceTrigger=Explicit}" Style="{StaticResource InlineEdit}"
+                             FontSize="14" TextWrapping="Wrap"
                              KeyDown="Text_KeyDown" LostKeyboardFocus="Text_LostKeyboardFocus" />
-                    <TextBlock Grid.Column="2" Text="{Binding DateText}" FontSize="12" Margin="12,6,0,0"
+                    <TextBlock Grid.Column="1" Text="{Binding DateText}" FontSize="12" Margin="12,6,0,0"
                                Foreground="{StaticResource TextSecondaryBrush}" />
-                    <Button x:Name="DeleteButton" Grid.Column="3" ToolTip="Delete" Opacity="0" VerticalAlignment="Top"
+                    <Button x:Name="DeleteButton" Grid.Column="2" ToolTip="Delete" Opacity="0" VerticalAlignment="Top"
                             Style="{StaticResource LinkButton}" Foreground="{StaticResource TextSecondaryBrush}"
                             Command="{Binding DataContext.DeleteSubjectCommand, ElementName=Root}" CommandParameter="{Binding}">
                         <TextBlock Style="{StaticResource IconOnly}" Text="{StaticResource Icon.Close}" FontSize="11" />
@@ -51,30 +51,25 @@
             </DataTemplate.Triggers>
         </DataTemplate>
 
-        <!-- One issue: [tick] text  Raised 2×  date [✕] -->
-        <DataTemplate x:Key="IssueRow">
-            <Border x:Name="Row" Background="Transparent" CornerRadius="6" Padding="2,0">
+        <!-- One issue: text (click to edit)  Raised 2×  date [✕] -->
+        <DataTemplate x:Key="PrepIssueRow">
+            <Border x:Name="Row" Background="Transparent" CornerRadius="6" Padding="2,0" Margin="22,0,0,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-
-                    <CheckBox IsChecked="{Binding IsTicked}" VerticalAlignment="Top" Margin="2,6,6,0"
-                              Focusable="False" Cursor="Hand" ToolTip="Sorted: gone after this 1:1" />
-                    <TextBox Grid.Column="1" Text="{Binding Text, UpdateSourceTrigger=Explicit}" Style="{StaticResource TickableText}"
+                    <TextBox Text="{Binding Text, UpdateSourceTrigger=Explicit}" Style="{StaticResource InlineEdit}"
+                             FontSize="14" TextWrapping="Wrap"
                              KeyDown="Text_KeyDown" LostKeyboardFocus="Text_LostKeyboardFocus" />
-                    <Border Grid.Column="2" CornerRadius="9" Padding="8,1" Margin="12,4,0,0" VerticalAlignment="Top"
-                            Background="#FEF3C7" ToolTip="Still open after that many 1:1s"
-                            Visibility="{Binding WasRaised, Converter={StaticResource BoolToVisibility}}">
+                    <Border Grid.Column="1" Style="{StaticResource RaisedBadge}">
                         <TextBlock Text="{Binding RaisedText}" FontSize="11" Foreground="#92400E" />
                     </Border>
-                    <TextBlock Grid.Column="3" Text="{Binding AddedText}" FontSize="12" Margin="12,6,0,0"
+                    <TextBlock Grid.Column="2" Text="{Binding AddedText}" FontSize="12" Margin="12,6,0,0"
                                Foreground="{StaticResource TextSecondaryBrush}" />
-                    <Button x:Name="DeleteButton" Grid.Column="4" ToolTip="Delete" Opacity="0" VerticalAlignment="Top"
+                    <Button x:Name="DeleteButton" Grid.Column="3" ToolTip="Delete" Opacity="0" VerticalAlignment="Top"
                             Style="{StaticResource LinkButton}" Foreground="{StaticResource TextSecondaryBrush}"
                             Command="{Binding DataContext.DeleteIssueCommand, ElementName=Root}" CommandParameter="{Binding}">
                         <TextBlock Style="{StaticResource IconOnly}" Text="{StaticResource Icon.Close}" FontSize="11" />
@@ -89,118 +84,303 @@
             </DataTemplate.Triggers>
         </DataTemplate>
 
-        <!-- Section: the two parts of the meeting. Biggest thing after the page title -->
+
+        <!-- Folding header of a group: [›] title  (3). The whole line is the button -->
+        <Style x:Key="GroupHeader" TargetType="Button">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="6" Padding="2,4">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource SurfaceTertiaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Chevron: › folded, ⌄ open, nothing when there is nothing to open -->
+        <Style x:Key="Chevron" TargetType="TextBlock" BasedOn="{StaticResource IconOnly}">
+            <Setter Property="Width" Value="22" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="Text" Value="&#xE76C;" />
+        </Style>
+
+        <!-- Count pill next to a group title -->
+        <Style x:Key="CountPill" TargetType="Border">
+            <Setter Property="CornerRadius" Value="9" />
+            <Setter Property="Padding" Value="7,0" />
+            <Setter Property="Margin" Value="8,0,0,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="{StaticResource SurfaceTertiaryBrush}" />
+        </Style>
+
+        <!-- ===== Call: read-only, big, tick only ===== -->
+
+        <!-- Ticked during the meeting: struck through -->
+        <Style x:Key="CallText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsTicked}" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource TextTertiaryBrush}" />
+                    <Setter Property="TextDecorations" Value="Strikethrough" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- One line: the whole line ticks -->
+        <DataTemplate x:Key="CallSubjectRow">
+            <CheckBox IsChecked="{Binding IsTicked}" Cursor="Hand" Focusable="False" Margin="2,4" VerticalContentAlignment="Top">
+                <CheckBox.LayoutTransform>
+                    <ScaleTransform ScaleX="1.15" ScaleY="1.15" />
+                </CheckBox.LayoutTransform>
+                <TextBlock Text="{Binding Text}" Style="{StaticResource CallText}" FontSize="16" Margin="6,-4,0,0" />
+            </CheckBox>
+        </DataTemplate>
+
+        <DataTemplate x:Key="CallIssueRow">
+            <DockPanel>
+                <Border DockPanel.Dock="Right" Style="{StaticResource RaisedBadge}" Margin="12,8,0,0">
+                        <TextBlock Text="{Binding RaisedText}" FontSize="11" Foreground="#92400E" />
+                    </Border>
+                <CheckBox IsChecked="{Binding IsTicked}" Cursor="Hand" Focusable="False" Margin="2,4" VerticalContentAlignment="Top">
+                    <CheckBox.LayoutTransform>
+                        <ScaleTransform ScaleX="1.15" ScaleY="1.15" />
+                    </CheckBox.LayoutTransform>
+                    <TextBlock Text="{Binding Text}" Style="{StaticResource CallText}" FontSize="16" Margin="6,-4,0,0" />
+                </CheckBox>
+            </DockPanel>
+        </DataTemplate>
+
+        <!-- Section: the two parts of the meeting -->
         <Style x:Key="SectionHeader" TargetType="TextBlock">
             <Setter Property="FontSize" Value="17" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
         </Style>
-
-        <!-- Objective title: grey and small, so the subjects under it carry the weight -->
-        <Style x:Key="GroupTitle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-            <Setter Property="Margin" Value="2,0,0,2" />
-            <Style.Triggers>
-                <!-- Built in, not one of yours: italic -->
-                <DataTrigger Binding="{Binding IsOther}" Value="True">
-                    <Setter Property="FontStyle" Value="Italic" />
-                    <Setter Property="FontWeight" Value="Normal" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
     </UserControl.Resources>
 
-    <Grid Margin="24,16,24,20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <Grid>
+        <!-- =========================== PREP =========================== -->
+        <Grid Margin="24,16,24,20"
+              Visibility="{Binding IsInCall, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <TextBlock Text="Next 1:1" Style="{StaticResource PageTitle}" />
+            <TextBlock Text="Next 1:1" Style="{StaticResource PageTitle}" />
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,4,0,0">
-            <StackPanel Margin="0,0,4,0">
-                <!-- Part 1: progress on my objectives. Section header like Retro's columns: icon + title -->
-                <DockPanel Margin="0,16,0,6">
-                    <Button DockPanel.Dock="Right" Content="Edit" Command="{Binding EditObjectivesCommand}"
-                            Style="{StaticResource LinkButton}" VerticalAlignment="Center" />
-                    <TextBlock Style="{StaticResource SectionHeader}">
-                        <Run Text="{StaticResource Icon.Flag}" FontFamily="{StaticResource IconFont}" FontSize="15"
-                             Foreground="{StaticResource AccentBrush}" />
-                        <Run Text=" My objectives" />
-                        <Run Text="{Binding SemesterLabel, Mode=OneWay}" FontSize="14" FontWeight="Normal"
-                             Foreground="{StaticResource TextSecondaryBrush}" />
-                    </TextBlock>
-                </DockPanel>
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,4,0,0" Focusable="False">
+                <StackPanel Margin="0,0,4,0">
+                    <!-- Issues & asks: one group, folding like the objectives -->
+                    <Button Style="{StaticResource GroupHeader}" Command="{Binding ToggleIssuesCommand}" Margin="0,16,0,2">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="IssuesChevron">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Chevron}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsIssuesExpanded}" Value="True">
+                                                <Setter Property="Text" Value="&#xE70D;" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding HasIssues}" Value="False">
+                                                <Setter Property="Visibility" Value="Hidden" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource SectionHeader}">
+                                <Run Text="{StaticResource Icon.Important}" FontFamily="{StaticResource IconFont}" FontSize="15"
+                                     Foreground="{StaticResource WarnBrush}" />
+                                <Run Text=" Issues &amp; asks" />
+                            </TextBlock>
+                            <Border Style="{StaticResource CountPill}">
+                                <TextBlock Text="{Binding IssueCount}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                            </Border>
+                        </StackPanel>
+                    </Button>
+                    <ItemsControl ItemsSource="{Binding Book.Issues}" ItemTemplate="{StaticResource PrepIssueRow}" Focusable="False"
+                                  Visibility="{Binding IsIssuesExpanded, Converter={StaticResource BoolToVisibility}}" />
 
-                <StackPanel Orientation="Horizontal" Margin="2,0,0,8"
-                            Visibility="{Binding HasObjectives, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
-                    <TextBlock Text="No objectives yet." FontSize="14" VerticalAlignment="Center"
-                               Foreground="{StaticResource TextSecondaryBrush}" />
-                    <Button Content="Add your objectives" Command="{Binding EditObjectivesCommand}"
-                            Style="{StaticResource LinkButton}" />
+                    <!-- My objectives -->
+                    <DockPanel Margin="0,24,0,4">
+                        <Button DockPanel.Dock="Right" Content="Edit" Command="{Binding EditObjectivesCommand}"
+                                Style="{StaticResource LinkButton}" VerticalAlignment="Center" />
+                        <TextBlock Style="{StaticResource SectionHeader}" Margin="24,0,0,0">
+                            <Run Text="{StaticResource Icon.Flag}" FontFamily="{StaticResource IconFont}" FontSize="15"
+                                 Foreground="{StaticResource AccentBrush}" />
+                            <Run Text=" My objectives" />
+                            <Run Text="{Binding SemesterLabel, Mode=OneWay}" FontSize="14" FontWeight="Normal"
+                                 Foreground="{StaticResource TextSecondaryBrush}" />
+                        </TextBlock>
+                    </DockPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="24,0,0,8"
+                                Visibility="{Binding HasObjectives, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
+                        <TextBlock Text="No objectives yet." FontSize="14" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                        <Button Content="Add your objectives" Command="{Binding EditObjectivesCommand}"
+                                Style="{StaticResource LinkButton}" />
+                    </StackPanel>
+
+                    <!-- Indented: objectives sit under their section title -->
+                    <ItemsControl ItemsSource="{Binding Objectives}" Focusable="False" Margin="24,0,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:ObjectiveRowViewModel}">
+                                <StackPanel Margin="0,0,0,2">
+                                    <Button Style="{StaticResource GroupHeader}" Command="{Binding ToggleCommand}">
+                                        <DockPanel>
+                                            <TextBlock x:Name="Chevron" DockPanel.Dock="Left" Style="{StaticResource Chevron}" Margin="0,3,0,0"
+                                                       VerticalAlignment="Top" />
+                                            <!-- Reminder for you, not for the call -->
+                                            <TextBlock DockPanel.Dock="Right" Text="{Binding QuietHint}" FontSize="12" Margin="12,2,4,0"
+                                                       Foreground="{StaticResource WarnBrush}"
+                                                       Visibility="{Binding IsQuiet, Converter={StaticResource BoolToVisibility}}" />
+                                            <TextBlock TextWrapping="Wrap" VerticalAlignment="Center">
+                                                <Run x:Name="Title" Text="{Binding Objective.Title, Mode=OneWay}" FontSize="14" FontWeight="SemiBold" />
+                                                <InlineUIContainer BaselineAlignment="Center">
+                                                    <Border Style="{StaticResource CountPill}">
+                                                        <TextBlock x:Name="Count" Text="{Binding Count}" FontSize="12"
+                                                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                                    </Border>
+                                                </InlineUIContainer>
+                                            </TextBlock>
+                                        </DockPanel>
+                                    </Button>
+                                    <ItemsControl x:Name="Subjects" ItemsSource="{Binding Pending}" ItemTemplate="{StaticResource PrepSubjectRow}"
+                                                  Focusable="False" Visibility="Collapsed" Margin="0,0,0,6" />
+                                </StackPanel>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsExpanded}" Value="True">
+                                        <Setter TargetName="Chevron" Property="Text" Value="&#xE70D;" />
+                                        <Setter TargetName="Subjects" Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                    <!-- Nothing in it: no chevron, title quieter -->
+                                    <DataTrigger Binding="{Binding HasPending}" Value="False">
+                                        <Setter TargetName="Chevron" Property="Visibility" Value="Hidden" />
+                                        <Setter TargetName="Title" Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                                        <Setter TargetName="Title" Property="FontWeight" Value="Normal" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsOther}" Value="True">
+                                        <Setter TargetName="Title" Property="FontStyle" Value="Italic" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Around mid-June / mid-December -->
+                    <StackPanel Orientation="Horizontal" Margin="24,20,0,0"
+                                Visibility="{Binding ShowReviewNudge, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="Semester review coming?" FontSize="14" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                        <Button Content="Open Semester review" Command="{Binding ShowSemesterReviewCommand}"
+                                Style="{StaticResource LinkButton}" />
+                    </StackPanel>
                 </StackPanel>
+            </ScrollViewer>
 
-                <ItemsControl ItemsSource="{Binding Objectives}" Focusable="False">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type vm:ObjectiveRowViewModel}">
-                            <StackPanel Margin="0,6,0,8">
-                                <!-- Objective: a quiet label above its subjects, not a heading -->
-                                <TextBlock Text="{Binding Objective.Title}" Style="{StaticResource GroupTitle}" />
-                                <TextBlock Text="{Binding QuietHint}" FontSize="12" Margin="2,0,0,2" FontStyle="Italic"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
-                                           Visibility="{Binding IsQuiet, Converter={StaticResource BoolToVisibility}}" />
-                                <ItemsControl ItemsSource="{Binding Pending}" ItemTemplate="{StaticResource SubjectRow}" Focusable="False" />
-                                <Border Style="{StaticResource AddRow}">
-                                    <TextBox Text="{Binding NewText, UpdateSourceTrigger=PropertyChanged}" Tag="+ Add subject"
-                                             Style="{StaticResource AddLine}" FontSize="13" Margin="20,0,0,0">
-                                        <TextBox.InputBindings>
-                                            <KeyBinding Key="Enter" Command="{Binding AddCommand}" />
-                                        </TextBox.InputBindings>
-                                    </TextBox>
-                                </Border>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+            <!-- The one add box: where it goes on the left, then type and Enter -->
+            <views:QuickAddBar x:Name="PrepAddBar" Grid.Row="2" DataContext="{Binding PrepAdd}" Margin="0,12,0,0" />
 
-                <!-- Part 2: escalations. Extra space above: a second, separate part of the meeting -->
-                <TextBlock Style="{StaticResource SectionHeader}" Margin="0,32,0,6">
-                    <Run Text="{StaticResource Icon.Important}" FontFamily="{StaticResource IconFont}" FontSize="15"
-                         Foreground="{StaticResource WarnBrush}" />
-                    <Run Text=" Issues &amp; asks" />
-                </TextBlock>
-                <ItemsControl ItemsSource="{Binding Book.Issues}" ItemTemplate="{StaticResource IssueRow}" Focusable="False" />
-                <Border Style="{StaticResource AddRow}">
-                    <TextBox Text="{Binding NewIssue, UpdateSourceTrigger=PropertyChanged}" Tag="+ Add issue or ask"
-                             Style="{StaticResource AddLine}" FontSize="13" Margin="20,0,0,0">
-                        <TextBox.InputBindings>
-                            <KeyBinding Key="Enter" Command="{Binding AddIssueCommand}" />
-                        </TextBox.InputBindings>
-                    </TextBox>
-                </Border>
+            <!-- Footer: look back on the left, the meeting on the right -->
+            <DockPanel Grid.Row="3" Margin="0,16,0,0">
+                <Button DockPanel.Dock="Right" Command="{Binding StartCallCommand}" Style="{StaticResource PrimaryButton}" MinWidth="160">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Start 1:1" />
+                        <TextBlock Style="{StaticResource IconGlyph}" Text="{StaticResource Icon.Play}" Margin="8,2,0,0" />
+                    </StackPanel>
+                </Button>
+                <Button Content="Semester review" Command="{Binding ShowSemesterReviewCommand}"
+                        Style="{StaticResource LinkButton}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="-6,0,0,0" />
+            </DockPanel>
+        </Grid>
 
-                <!-- Around mid-June / mid-December -->
-                <StackPanel Orientation="Horizontal" Margin="2,20,0,0"
-                            Visibility="{Binding ShowReviewNudge, Converter={StaticResource BoolToVisibility}}">
-                    <TextBlock Text="Semester review coming?" FontSize="14" VerticalAlignment="Center"
-                               Foreground="{StaticResource TextSecondaryBrush}" />
-                    <Button Content="Open Shared earlier" Command="{Binding ShowSharedEarlierCommand}"
-                            Style="{StaticResource LinkButton}" />
+        <!-- =========================== CALL =========================== -->
+        <Grid Margin="24,16,24,20"
+              Visibility="{Binding IsInCall, Converter={StaticResource BoolToVisibility}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="1:1" Style="{StaticResource PageTitle}" />
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,4,0,0" Focusable="False">
+                <StackPanel Margin="0,0,4,0">
+                    <TextBlock Text="Nothing to go through. Add an issue below, or go back to prep." FontSize="16" Margin="2,20,0,0"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Visibility="{Binding IsCallEmpty, Converter={StaticResource BoolToVisibility}}" />
+
+                    <!-- Issues first: they get dropped when time runs out -->
+                    <StackPanel Visibility="{Binding HasIssues, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Style="{StaticResource SectionHeader}" FontSize="19" Margin="0,16,0,6">
+                            <Run Text="{StaticResource Icon.Important}" FontFamily="{StaticResource IconFont}" FontSize="17"
+                                 Foreground="{StaticResource WarnBrush}" />
+                            <Run Text=" Issues &amp; asks" />
+                        </TextBlock>
+                        <ItemsControl ItemsSource="{Binding Book.Issues}" ItemTemplate="{StaticResource CallIssueRow}" Focusable="False" />
+                    </StackPanel>
+
+                    <!-- Then progress: only objectives with something to share -->
+                    <StackPanel Visibility="{Binding HasPendingSubjects, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Style="{StaticResource SectionHeader}" FontSize="19" Margin="0,24,0,6">
+                            <Run Text="{StaticResource Icon.Flag}" FontFamily="{StaticResource IconFont}" FontSize="17"
+                                 Foreground="{StaticResource AccentBrush}" />
+                            <Run Text=" My objectives" />
+                        </TextBlock>
+                        <ItemsControl ItemsSource="{Binding Objectives}" Focusable="False">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:ObjectiveRowViewModel}">
+                                    <StackPanel Margin="0,6,0,6"
+                                                Visibility="{Binding HasPending, Converter={StaticResource BoolToVisibility}}">
+                                        <TextBlock x:Name="Title" Text="{Binding Objective.Title}" FontSize="14" FontWeight="SemiBold"
+                                                   TextWrapping="Wrap" Margin="2,0,0,2" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        <ItemsControl ItemsSource="{Binding Pending}" ItemTemplate="{StaticResource CallSubjectRow}" Focusable="False" />
+                                    </StackPanel>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding IsOther}" Value="True">
+                                            <Setter TargetName="Title" Property="FontStyle" Value="Italic" />
+                                            <Setter TargetName="Title" Property="FontWeight" Value="Normal" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
-        </ScrollViewer>
+            </ScrollViewer>
 
-        <!-- Footer: look back on the left, the one thing you do after each meeting on the right -->
-        <DockPanel Grid.Row="2" Margin="0,16,0,0">
-            <Button DockPanel.Dock="Right" Content="Done with 1:1" Command="{Binding DoneCommand}"
-                    Style="{StaticResource PrimaryButton}" />
-            <Button Content="Shared earlier" Command="{Binding ShowSharedEarlierCommand}"
-                    Style="{StaticResource LinkButton}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="-6,0,0,0" />
-        </DockPanel>
+            <!-- Something new came up: issues only, the rest waits for prep -->
+            <views:QuickAddBar Grid.Row="2" DataContext="{Binding CallAdd}" Margin="0,12,0,0" />
+
+            <DockPanel Grid.Row="3" Margin="0,16,0,0">
+                <Button DockPanel.Dock="Right" Content="Done with 1:1" Command="{Binding DoneCommand}"
+                        Style="{StaticResource PrimaryButton}" MinWidth="160" />
+                <Button Command="{Binding BackToPrepCommand}" Style="{StaticResource LinkButton}" VerticalAlignment="Center"
+                        HorizontalAlignment="Left" Margin="-6,0,0,0" ToolTip="Nothing is recorded; ticks are kept">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource IconGlyph}" Text="{StaticResource Icon.Back}" />
+                        <TextBlock Text="Back to prep" />
+                    </StackPanel>
+                </Button>
+            </DockPanel>
+        </Grid>
     </Grid>
 </UserControl>

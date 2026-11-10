@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Daybook.App.ViewModels"
+             xmlns:views="clr-namespace:Daybook.App.Views"
              mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:SharedEarlierViewModel}"
              x:Name="Root">
     <UserControl.Resources>
@@ -82,6 +83,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Button Command="{Binding BackCommand}" Style="{StaticResource LinkButton}" HorizontalAlignment="Left" Margin="-6,0,0,0">
@@ -113,15 +115,6 @@
                                            Foreground="{StaticResource TextSecondaryBrush}"
                                            Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}" />
                                 <ItemsControl ItemsSource="{Binding Shared}" ItemTemplate="{StaticResource SharedRow}" Focusable="False" />
-                                <!-- A forgotten win: dated today, click the date to change it -->
-                                <Border Style="{StaticResource AddRow}">
-                                    <TextBox Text="{Binding NewText, UpdateSourceTrigger=PropertyChanged}" Tag="+ Add"
-                                             Style="{StaticResource AddLine}" FontSize="13" Margin="0">
-                                        <TextBox.InputBindings>
-                                            <KeyBinding Key="Enter" Command="{Binding AddCommand}" />
-                                        </TextBox.InputBindings>
-                                    </TextBox>
-                                </Border>
                             </StackPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -129,8 +122,12 @@
             </StackPanel>
         </ScrollViewer>
 
+        <!-- A forgotten win: same add box as the 1:1 page, objectives only. Dated today, click the date to change it -->
+        <views:QuickAddBar Grid.Row="3" DataContext="{Binding Add}" Margin="0,12,0,0"
+                           Visibility="{Binding DataContext.CanAdd, ElementName=Root, Converter={StaticResource BoolToVisibility}}" />
+
         <!-- Footer: older semesters, and the rare "next semester" step right after the review -->
-        <DockPanel Grid.Row="3" Margin="0,12,0,0">
+        <DockPanel Grid.Row="4" Margin="0,12,0,0">
             <Button DockPanel.Dock="Right" Content="Start new semester" Command="{Binding StartNewSemesterCommand}"
                     Style="{StaticResource LinkButton}" Foreground="{StaticResource TextSecondaryBrush}"
                     ToolTip="Objectives carry over; this semester stays readable from here"

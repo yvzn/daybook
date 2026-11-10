@@ -42,18 +42,26 @@ Four tabs:
   next time (with undo).
 
 **1:1**
-- In meeting order: **My objectives** for the semester, each with the subjects to share about it, then **Issues &
-  asks**. Click **+ Add subject** under an objective (or **+ Add issue or ask**), type and press **Enter**.
+- Two modes, like Standup: **prep** before the meeting, **call** during it.
+- **Prep** lists **Issues & asks**, then **My objectives** for the semester, each with a count. Groups with something
+  in them are open, empty ones stay folded; click a title to fold or open it. Click a line to edit it, hover and click
+  **✕** to delete (with undo). An objective you haven't talked about in 3 or more 1:1s shows
+  **Not mentioned in last N 1:1s**.
+- The add box at the bottom: on its left, pick where it goes (**⚑ objective ▾** opens the list, or **! Issue**), type
+  and press **Enter**. The choice sticks, so adding several things to the same place is just typing.
 - A win that fits no objective goes under **Outside objectives**, always last: it is kept for the review like the rest.
 - On **Today**, hover a task and click **→ 1:1** to send it to an objective, **Outside objectives** or **Issues & asks** (the task stays as it is).
-- During the meeting, tick what you covered. **Done with 1:1** moves ticked subjects to **Shared earlier**, removes
-  ticked issues, and keeps the rest for next time (with undo). An issue still open after a 1:1 shows **Raised N×**.
-- An objective you haven't talked about in 3 or more 1:1s shows **Not mentioned in last N 1:1s**.
-- **Shared earlier** is the semester review: everything shared, grouped by objective, all editable. Click a date to
-  change it, add an outcome (what your manager said), add a forgotten win, or send a subject back with
-  **Not discussed**. **Copy** puts it all on the clipboard as plain text.
+- **Start 1:1 ▶** opens the **call** view, made for screen share: big text, read-only, issues first, then only the
+  objectives with something to share (no reminders). Tick what you covered; the add box takes new issues only.
+  Closing the app keeps you in the call. **← Back to prep** leaves without recording anything.
+- **Done with 1:1** moves ticked subjects to **Semester review**, removes ticked issues, keeps the rest for next time
+  and goes back to prep (with undo). An issue still open after a 1:1 shows **Raised N×**.
+- **Semester review**: everything shared, grouped by objective, all editable. Click a date to change it, add an
+  outcome (what your manager said), or send a subject back with **Not discussed**. A forgotten win goes in through the
+  same add box at the bottom (objectives only), counted as shared today. **Copy** puts it all on the clipboard as
+  plain text.
 - A semester has no fixed dates: you start the next one with **Start new semester** after your review. Objectives
-  carry over (edit them with **Edit**), and past semesters stay readable from **Shared earlier**. From mid-June and
+  carry over (edit them with **Edit**), and past semesters stay readable from **Semester review**. From mid-June and
   mid-December, a hint reminds you the review is coming.
 
 **Edit team**

@@ -10,8 +10,8 @@ using Daybook.App.Models;
 namespace Daybook.App.ViewModels;
 
 /// <summary>
-/// Everything shared this semester, grouped by objective, all editable: the semester review is this same page.
-/// Not a copy: editing here edits the subjects themselves.
+/// Semester review: everything shared this semester, grouped by objective, all editable.
+/// Not a copy: editing here edits the subjects themselves. A forgotten win goes in through the add box at the bottom.
 /// </summary>
 public partial class SharedEarlierViewModel : ObservableObject
 {
@@ -31,7 +31,20 @@ public partial class SharedEarlierViewModel : ObservableObject
         _openSemester = openSemester;
         _semesterStarted = semesterStarted;
         Groups = semester.AllGroups.Select(o => new SharedGroupViewModel(o)).ToList();
+        // Past semesters are read back, not added to
+        Add = IsCurrent
+            ? new QuickAddViewModel(() => semester.AllGroups, AddForgottenWin, addIssue: null, "Add a forgotten win to")
+            : null;
     }
+
+    /// <summary>Bottom add box, current semester only.</summary>
+    public QuickAddViewModel? Add { get; }
+
+    public bool CanAdd => Add is not null;
+
+    /// <summary>Counted as shared today; click its date to change it.</summary>
+    private static void AddForgottenWin(Objective objective, string text) =>
+        objective.Subjects.Add(new OneOnOneSubject(text, WorkDays.Today) { SharedOn = WorkDays.Today });
 
     public Semester Semester { get; }
 
@@ -39,7 +52,7 @@ public partial class SharedEarlierViewModel : ObservableObject
 
     public bool IsCurrent => Semester == _book.Current;
 
-    public string Title => IsCurrent ? $"{Semester.Label} · shared so far" : $"{Semester.Label} · shared";
+    public string Title => $"Semester review · {Semester.Label}";
 
     public string BackLabel => IsCurrent ? "Back to 1:1" : $"Back to {_book.Current.Label}";
 
@@ -173,20 +186,6 @@ public partial class SharedGroupViewModel : ObservableObject
     public ObservableCollection<OneOnOneSubject> Shared { get; } = [];
 
     public bool IsEmpty => Shared.Count == 0;
-
-    [ObservableProperty]
-    private string _newText = "";
-
-    /// <summary>A forgotten win: counted as shared today; click its date to change it.</summary>
-    [RelayCommand]
-    private void Add()
-    {
-        var text = NewText.Trim();
-        if (text.Length == 0) return;
-
-        Objective.Subjects.Add(new OneOnOneSubject(text, WorkDays.Today) { SharedOn = WorkDays.Today });
-        NewText = "";
-    }
 
     internal void Detach()
     {

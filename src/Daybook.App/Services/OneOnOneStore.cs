@@ -43,6 +43,7 @@ public sealed class OneOnOneStore
                 foreach (var issue in data.Issues ?? [])
                     book.Issues.Add(new Issue(issue.Text, issue.AddedOn) { IsTicked = issue.IsTicked, TimesRaised = issue.TimesRaised });
                 foreach (var day in data.Meetings ?? []) book.Meetings.Add(day);
+                book.IsInCall = data.InCall;
             }
         }
         catch (Exception e) when (e is IOException or JsonException or UnauthorizedAccessException)
@@ -126,7 +127,8 @@ public sealed class OneOnOneStore
             ToData(_book.Current),
             _book.Past.Select(ToData).ToList(),
             _book.Issues.Select(i => new IssueData(i.Text, i.AddedOn, i.IsTicked, i.TimesRaised)).ToList(),
-            _book.Meetings.ToList());
+            _book.Meetings.ToList(),
+            _book.IsInCall);
         Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
         File.WriteAllText(FilePath, JsonSerializer.Serialize(data, JsonOptions));
     }
@@ -155,7 +157,7 @@ public sealed class OneOnOneStore
         return semester;
     }
 
-    private sealed record BookData(SemesterData? Current, List<SemesterData>? Past, List<IssueData>? Issues, List<DateOnly>? Meetings);
+    private sealed record BookData(SemesterData? Current, List<SemesterData>? Past, List<IssueData>? Issues, List<DateOnly>? Meetings, bool InCall = false);
 
     private sealed record SemesterData(string Label, DateOnly StartedOn, List<ObjectiveData>? Objectives, ObjectiveData? Other);
 
